@@ -1,17 +1,6 @@
 #include "Paint.h"
 #include "framework.h"
 
-#define MAX_LOADSTRING 100
-
-HINSTANCE hInst;
-WCHAR szTitle[MAX_LOADSTRING];
-WCHAR szWindowClass[MAX_LOADSTRING];
-
-ATOM MyRegisterClass(HINSTANCE hInstance);
-BOOL InitInstance(HINSTANCE, int);
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine,
                       _In_ int nCmdShow) {
@@ -63,16 +52,9 @@ ATOM MyRegisterClass(HINSTANCE hInstance) {
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow) {
   hInst = hInstance;
 
-  
-  /*
   HWND hWnd =
-      CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
-                    0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-  */
-
-  HWND hWnd =
-      CreateWindowW(szWindowClass, szTitle, WS_MAXIMIZE | WS_SYSMENU, CW_USEDEFAULT,
-                    0, 750, 750, nullptr, nullptr, hInstance, nullptr);
+      CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPED | WS_SYSMENU, CW_USEDEFAULT,
+                    0, 640, 480, nullptr, nullptr, hInstance, nullptr);
 
   if (!hWnd) {
     return FALSE;
@@ -86,7 +68,27 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow) {
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
                          LPARAM lParam) {
+  HDC Hdc;
+
   switch (message) {
+  case WM_CREATE:
+    break;
+  case WM_LBUTTONDOWN:
+    isDrawing = true;
+    MousePos[0] = GET_X_LPARAM(lParam);
+    MousePos[1] = GET_Y_LPARAM(lParam);
+    break;
+  case WM_MOUSEMOVE:
+    if (isDrawing) {
+      Hdc = GetDC(hWnd);
+      draw(hWnd, Hdc, lParam);
+      ReleaseDC(hWnd, Hdc);
+      InvalidateRect(hWnd, nullptr, false);
+    }
+    break;
+  case WM_LBUTTONUP:
+    isDrawing = false;
+    break;
   case WM_COMMAND: {
     int wmId = LOWORD(wParam);
     // Parse the menu selections:
@@ -129,4 +131,21 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
     break;
   }
   return (INT_PTR)FALSE;
+}
+
+void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
+  if (!isDrawing) {
+    return;
+  }
+
+  MoveToEx(Hdc, MousePos[0], MousePos[1], nullptr);
+
+  MousePos[0] = GET_X_LPARAM(LParam);
+  MousePos[1] = GET_Y_LPARAM(LParam);
+
+  wchar_t Buffer[100];
+  wsprintfW(Buffer, L"X : %05d, Y : %05d", MousePos[0], MousePos[1]);
+  TextOutW(Hdc, 300, 400, Buffer, lstrlenW(Buffer));
+
+  LineTo(Hdc, MousePos[0], MousePos[1]);
 }
