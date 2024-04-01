@@ -1,8 +1,8 @@
 #ifndef PAINT_H
 #define PAINT_H
 
-#include "resource.h"
 #include "framework.h"
+#include "resource.h"
 
 #define MAX_LOADSTRING 100
 
@@ -16,8 +16,25 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 
 void draw(HWND HWnd, HDC Hdc, LPARAM LParam);
+void createButton(const wchar_t *Name, long X, long Y, long Width, long Height,
+                  HMENU Id, HWND HWnd, HINSTANCE HInstance);
+void createRGBTable(long X, long Y, long Width, long Height, HMENU Id,
+                    HWND HWnd, HINSTANCE HInstance);
+void createWidthTable(long X, long Y, long Width, long Height, HMENU Id,
+                      HWND HWnd, HINSTANCE HInstance);
+
+bool trySave(HWND HWnd);
+bool tryOpen(HWND HWnd);
+
+void setColor(HWND HWnd, HDC Hdc);
+void setWidth(HWND HWnd, HDC Hdc);
+void handleScroll(HWND HWnd, WPARAM WParam, LPARAM LParam);
+void handleDrawMode(HWND HWnd, WPARAM WParam, LPARAM LParam);
 
 int MousePos[2];
-bool isDrawing = false;
+int PenWidth = 10;
+int Red, Green, Blue;
+bool IsDrawing = false;
+int DrawMode = 0;
 
 #endif
