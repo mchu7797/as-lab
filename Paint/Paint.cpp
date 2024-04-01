@@ -74,17 +74,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
   case WM_CREATE:
     createButton(L"Pen", 20, 20, 100, 50, (HMENU)100, hWnd, hInst);
     createButton(L"Erase", 20, 75, 100, 50, (HMENU)101, hWnd, hInst);
-    createRGBTable(150, 20, 150, 15, (HMENU)200, hWnd, hInst);
-    createWidthTable(400, 20, 150, 15, (HMENU)300, hWnd, hInst);
+    createButton(L"Rectangle", 130, 20, 100, 50, (HMENU)102, hWnd, hInst);
+    createButton(L"Ellipse", 130, 75, 100, 50, (HMENU)103, hWnd, hInst);
+    CreateWindowW(L"Button", L"ClearAll", WS_CHILD | WS_VISIBLE, 460, 80,
+                  100, 50, hWnd, (HMENU)400, hInst, nullptr);
+    createRGBTable(250, 20, 150, 15, (HMENU)200, hWnd, hInst);
+    createWidthTable(460, 20, 150, 15, (HMENU)300, hWnd, hInst);
     break;
   case WM_HSCROLL:
     handleScroll(hWnd, wParam, lParam);
     InvalidateRect(hWnd, nullptr, false);
     break;
   case WM_LBUTTONDOWN:
-    IsDrawing = true;
-    MousePos[0] = GET_X_LPARAM(lParam);
-    MousePos[1] = GET_Y_LPARAM(lParam);
+    if (DrawMode > 2) {
+      Hdc = GetDC(hWnd);
+      IsDrawing = true;
+      draw(hWnd, Hdc, lParam);
+      IsDrawing = false;
+      ReleaseDC(hWnd, Hdc);
+      InvalidateRect(hWnd, nullptr, false);
+    } else {
+      IsDrawing = true;
+      MousePos[0] = GET_X_LPARAM(lParam);
+      MousePos[1] = GET_Y_LPARAM(lParam);
+    }
     break;
   case WM_MOUSEMOVE:
     if (IsDrawing) {
@@ -95,18 +108,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     }
     break;
   case WM_LBUTTONUP:
-    IsDrawing = false;
+    if (DrawMode < 3) {
+      IsDrawing = false;
+    }
     break;
   case WM_COMMAND: {
     handleDrawMode(hWnd, wParam, lParam);
 
     int wmId = LOWORD(wParam);
     switch (wmId) {
-    case IDM_SAVE:
-      if (!trySave(hWnd)) {
-        MessageBox(hWnd, L"저장 실패!", L"오류", MB_OK);
-      }
-      break;
     case IDM_ABOUT:
       DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
       break;
@@ -157,30 +167,44 @@ void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
   if (GET_Y_LPARAM(LParam) < 150 || MousePos[1] < 150) {
     return;
   }
-
-  HPEN NewPen;
-
-  if (DrawMode == 2) {
-    NewPen = CreatePen(PS_SOLID, 40, RGB(255, 255, 255));
+  
+  if (DrawMode == 1) {
+    HPEN NewPen = CreatePen(PS_SOLID, PenWidth, RGB(Red, Green, Blue));
+    HGDIOBJ OldPen = SelectObject(Hdc, NewPen);
+    MoveToEx(Hdc, MousePos[0], MousePos[1], nullptr);
+    MousePos[0] = GET_X_LPARAM(LParam);
+    MousePos[1] = GET_Y_LPARAM(LParam);
+    LineTo(Hdc, MousePos[0], MousePos[1]);
+    SelectObject(Hdc, OldPen);
+    DeleteObject(NewPen);
+  } else if (DrawMode == 2) {
+    HPEN NewPen = CreatePen(PS_SOLID, 40, RGB(255, 255, 255));
+    HGDIOBJ OldPen = SelectObject(Hdc, NewPen);
+    MoveToEx(Hdc, MousePos[0], MousePos[1], nullptr);
+    MousePos[0] = GET_X_LPARAM(LParam);
+    MousePos[1] = GET_Y_LPARAM(LParam);
+    LineTo(Hdc, MousePos[0], MousePos[1]);
+    SelectObject(Hdc, OldPen);
+    DeleteObject(NewPen);
+  } else if (DrawMode == 3) {
+    HBRUSH NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
+    HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+    MousePos[0] = GET_X_LPARAM(LParam);
+    MousePos[1] = GET_Y_LPARAM(LParam);
+    Rectangle(Hdc, MousePos[0] - PenWidth, MousePos[1] - PenWidth,
+              MousePos[0] + PenWidth, MousePos[1] + PenWidth);
   } else {
-    NewPen = CreatePen(PS_SOLID, PenWidth, RGB(Red, Green, Blue));
+    HBRUSH NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
+    HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+    MousePos[0] = GET_X_LPARAM(LParam);
+    MousePos[1] = GET_Y_LPARAM(LParam);
+    Ellipse(Hdc, MousePos[0] - PenWidth, MousePos[1] - PenWidth,
+            MousePos[0] + PenWidth, MousePos[1] + PenWidth);
   }
-
-  HGDIOBJ OldPen = SelectObject(Hdc, NewPen);
-
-  MoveToEx(Hdc, MousePos[0], MousePos[1], nullptr);
-
-  MousePos[0] = GET_X_LPARAM(LParam);
-  MousePos[1] = GET_Y_LPARAM(LParam);
 
   wchar_t Buffer[100];
   wsprintfW(Buffer, L"X : %05d, Y : %05d", MousePos[0], MousePos[1]);
-  TextOutW(Hdc, 400, 60, Buffer, lstrlenW(Buffer));
-
-  LineTo(Hdc, MousePos[0], MousePos[1]);
-
-  SelectObject(Hdc, OldPen);
-  DeleteObject(NewPen);
+  TextOutW(Hdc, 460, 60, Buffer, lstrlenW(Buffer));
 }
 
 void createButton(const wchar_t *Name, long X, long Y, long Width, long Height,
@@ -228,12 +252,12 @@ void setColor(HWND HWnd, HDC Hdc) {
   HBRUSH NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
   HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
 
-  Rectangle(Hdc, 310, 20, 350, 85);
+  Rectangle(Hdc, 410, 20, 450, 85);
 
   wchar_t Text[30];
 
   wsprintf(Text, L"R%03d, G%03d, B%03d", Red, Green, Blue);
-  TextOutW(Hdc, 150, 90, Text, lstrlenW(Text));
+  TextOutW(Hdc, 250, 90, Text, lstrlenW(Text));
 }
 
 void setWidth(HWND HWnd, HDC Hdc) {
@@ -241,9 +265,17 @@ void setWidth(HWND HWnd, HDC Hdc) {
                           SB_CTL);
   PenWidth = (int)(PenWidth / 10 + 1);
 
+  HBRUSH NewBrush = CreateSolidBrush(RGB(255, 255, 255));
+  HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+  Ellipse(Hdc, 650 - 26, 45 - 26, 650 + 26, 45 + 26);
+  
+  NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
+  OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+  Ellipse(Hdc, 650 - PenWidth, 45 - PenWidth, 650 + PenWidth, 45 + PenWidth);
+  
   wchar_t Text[15];
   wsprintfW(Text, L"W%02d", PenWidth);
-  TextOutW(Hdc, 400, 45, Text, lstrlenW(Text));
+  TextOutW(Hdc, 460, 45, Text, lstrlenW(Text));
 }
 
 void handleDrawMode(HWND HWnd, WPARAM WParam, LPARAM LParam) {
@@ -257,6 +289,10 @@ void handleDrawMode(HWND HWnd, WPARAM WParam, LPARAM LParam) {
       SendMessageW((HWND)LParam, BM_SETCHECK, BST_CHECKED, 0);
       SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Erase"), BM_SETCHECK,
                    BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Rectangle"),
+                   BM_SETCHECK, BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Ellipse"),
+                   BM_SETCHECK, BST_UNCHECKED, 0);
       DrawMode = 1;
     } else {
       SendMessageW((HWND)LParam, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -268,11 +304,48 @@ void handleDrawMode(HWND HWnd, WPARAM WParam, LPARAM LParam) {
       SendMessageW((HWND)LParam, BM_SETCHECK, BST_CHECKED, 0);
       SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Pen"), BM_SETCHECK,
                    BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Rectangle"),
+                   BM_SETCHECK, BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Ellipse"),
+                   BM_SETCHECK, BST_UNCHECKED, 0);
       DrawMode = 2;
     } else {
       SendMessageW((HWND)LParam, BM_SETCHECK, BST_UNCHECKED, 0);
       DrawMode = 0;
     }
+    break;
+  case 102:
+    if (SendMessage((HWND)LParam, BM_GETCHECK, 0, 0) == BST_UNCHECKED) {
+      SendMessageW((HWND)LParam, BM_SETCHECK, BST_CHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Erase"), BM_SETCHECK,
+                   BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Pen"), BM_SETCHECK,
+                   BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Ellipse"),
+                   BM_SETCHECK, BST_UNCHECKED, 0);
+      DrawMode = 3;
+    } else {
+      SendMessageW((HWND)LParam, BM_SETCHECK, BST_UNCHECKED, 0);
+      DrawMode = 0;
+    }
+    break;
+  case 103:
+    if (SendMessage((HWND)LParam, BM_GETCHECK, 0, 0) == BST_UNCHECKED) {
+      SendMessageW((HWND)LParam, BM_SETCHECK, BST_CHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Erase"), BM_SETCHECK,
+                   BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Pen"), BM_SETCHECK,
+                   BST_UNCHECKED, 0);
+      SendMessageW(FindWindowExW(HWnd, NULL, L"Button", L"Rectangle"),
+                   BM_SETCHECK, BST_UNCHECKED, 0);
+      DrawMode = 4;
+    } else {
+      SendMessageW((HWND)LParam, BM_SETCHECK, BST_UNCHECKED, 0);
+      DrawMode = 0;
+    }
+    break;
+  case 400:
+    InvalidateRect(HWnd, nullptr, true);
     break;
   }
 }
@@ -299,96 +372,4 @@ void handleScroll(HWND HWnd, WPARAM WParam, LPARAM LParam) {
     SetScrollPos((HWND)LParam, SB_CTL, HIWORD(WParam), true);
     break;
   }
-}
-
-bool trySave(HWND HWnd) {
-  OPENFILENAME saveFileName;
-  TCHAR lpstrFile[256] = L"";
-
-  memset(&saveFileName, 0, sizeof(OPENFILENAME));
-  saveFileName.lStructSize = sizeof(OPENFILENAME);
-  saveFileName.hwndOwner = HWnd;
-  saveFileName.lpstrFile = lpstrFile;
-  saveFileName.nMaxFile = 256;
-  saveFileName.lpstrInitialDir = L".";
-  saveFileName.lpstrDefExt = L"bmp";
-  saveFileName.lpstrFilter = L"비트맵 파일\0*.bmp\0";
-
-  if (GetSaveFileName(&saveFileName) == 0) {
-    return false;
-  }
-
-  HDC hdcWindow = GetDC(HWnd);
-  if (!hdcWindow)
-    return FALSE;
-
-  RECT rc;
-  GetClientRect(HWnd, &rc);
-
-  rc.top = 200;
-
-  HDC hdcMem = CreateCompatibleDC(hdcWindow);
-  if (!hdcMem) {
-    ReleaseDC(HWnd, hdcWindow);
-    return FALSE;
-  }
-
-  HBITMAP hBitmap =
-      CreateCompatibleBitmap(hdcWindow, rc.right - rc.left, rc.bottom - rc.top);
-  if (!hBitmap) {
-    DeleteDC(hdcMem);
-    ReleaseDC(HWnd, hdcWindow);
-    return FALSE;
-  }
-
-  SelectObject(hdcMem, hBitmap);
-  BitBlt(hdcMem, 0, 200, rc.right - rc.left, rc.bottom - rc.top, hdcWindow, 0, 0,
-         SRCCOPY);
-
-  BITMAPFILEHEADER bmfHeader = {0};
-  BITMAPINFOHEADER *pbi = nullptr;
-  DWORD dwSize = sizeof(BITMAPINFOHEADER);
-  pbi = (BITMAPINFOHEADER *)malloc(dwSize);
-  pbi->biSize = dwSize;
-
-  GetDIBits(hdcWindow, hBitmap, 0, 0, nullptr, (BITMAPINFO *)pbi,
-            DIB_RGB_COLORS);
-
-  DWORD dwSizeImage =
-      ((pbi->biWidth * pbi->biBitCount + 31) / 32) * 4 * pbi->biHeight;
-
-  HANDLE hFile = CreateFile(lpstrFile, GENERIC_WRITE, 0, nullptr,
-                            CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-  if (hFile == INVALID_HANDLE_VALUE) {
-    DeleteObject(hBitmap);
-    DeleteDC(hdcMem);
-    ReleaseDC(HWnd, hdcWindow);
-    return FALSE;
-  }
-
-  bmfHeader.bfType = 0x4D42; // "BM"
-  bmfHeader.bfSize =
-      sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwSizeImage;
-  bmfHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-
-  DWORD dwBytesWritten = 0;
-  WriteFile(hFile, &bmfHeader, sizeof(BITMAPFILEHEADER), &dwBytesWritten,
-            nullptr);
-  WriteFile(hFile, pbi, sizeof(BITMAPINFOHEADER), &dwBytesWritten, nullptr);
-
-  char *pBits = new char[dwSizeImage];
-  GetDIBits(hdcMem, hBitmap, 0, pbi->biHeight, pBits, (BITMAPINFO *)pbi,
-            DIB_RGB_COLORS);
-  WriteFile(hFile, pBits, dwSizeImage, &dwBytesWritten, nullptr);
-
-  delete[] pBits;
-  CloseHandle(hFile);
-
-  DeleteObject(hBitmap);
-  DeleteDC(hdcMem);
-  ReleaseDC(HWnd, hdcWindow);
-
-  free(pbi);
-
-  return TRUE;
 }
