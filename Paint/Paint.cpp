@@ -193,6 +193,8 @@ void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
     MousePos[1] = GET_Y_LPARAM(LParam);
     Rectangle(Hdc, MousePos[0] - PenWidth, MousePos[1] - PenWidth,
               MousePos[0] + PenWidth, MousePos[1] + PenWidth);
+    SelectObject(Hdc, OldBrush);
+    DeleteObject(NewBrush);
   } else {
     HBRUSH NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
     HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
@@ -200,6 +202,8 @@ void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
     MousePos[1] = GET_Y_LPARAM(LParam);
     Ellipse(Hdc, MousePos[0] - PenWidth, MousePos[1] - PenWidth,
             MousePos[0] + PenWidth, MousePos[1] + PenWidth);
+    SelectObject(Hdc, OldBrush);
+    DeleteObject(NewBrush);
   }
 
   wchar_t Buffer[100];
@@ -254,6 +258,9 @@ void setColor(HWND HWnd, HDC Hdc) {
 
   Rectangle(Hdc, 410, 20, 450, 85);
 
+  SelectObject(Hdc, OldBrush);
+  DeleteObject(NewBrush);
+
   wchar_t Text[30];
 
   wsprintf(Text, L"R%03d, G%03d, B%03d", Red, Green, Blue);
@@ -272,6 +279,9 @@ void setWidth(HWND HWnd, HDC Hdc) {
   NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
   OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
   Ellipse(Hdc, 650 - PenWidth, 45 - PenWidth, 650 + PenWidth, 45 + PenWidth);
+
+  SelectObject(Hdc, OldBrush);
+  DeleteObject(NewBrush);
   
   wchar_t Text[15];
   wsprintfW(Text, L"W%02d", PenWidth);
