@@ -76,8 +76,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     createButton(L"Erase", 20, 75, 100, 50, (HMENU)101, hWnd, hInst);
     createButton(L"Rectangle", 130, 20, 100, 50, (HMENU)102, hWnd, hInst);
     createButton(L"Ellipse", 130, 75, 100, 50, (HMENU)103, hWnd, hInst);
-    CreateWindowW(L"Button", L"ClearAll", WS_CHILD | WS_VISIBLE, 460, 80,
-                  100, 50, hWnd, (HMENU)400, hInst, nullptr);
+    CreateWindowW(L"Button", L"ClearAll", WS_CHILD | WS_VISIBLE, 460, 80, 100,
+                  50, hWnd, (HMENU)400, hInst, nullptr);
     createRGBTable(250, 20, 150, 15, (HMENU)200, hWnd, hInst);
     createWidthTable(460, 20, 150, 15, (HMENU)300, hWnd, hInst);
     break;
@@ -167,9 +167,10 @@ void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
   if (GET_Y_LPARAM(LParam) < 150 || MousePos[1] < 150) {
     return;
   }
-  
+
   if (DrawMode == 1) {
-    HPEN NewPen = CreatePen(PS_SOLID, PenWidth, RGB(Red, Green, Blue));
+    HPEN NewPen =
+        CreatePen(PS_SOLID, int(PenWidth / 10 + 1), RGB(Red, Green, Blue));
     HGDIOBJ OldPen = SelectObject(Hdc, NewPen);
     MoveToEx(Hdc, MousePos[0], MousePos[1], nullptr);
     MousePos[0] = GET_X_LPARAM(LParam);
@@ -270,19 +271,20 @@ void setColor(HWND HWnd, HDC Hdc) {
 void setWidth(HWND HWnd, HDC Hdc) {
   PenWidth = GetScrollPos(FindWindowExW(HWnd, nullptr, L"Scrollbar", L"Width"),
                           SB_CTL);
-  PenWidth = (int)(PenWidth / 10 + 1);
+  int PenWidthEdited = (int)(PenWidth / 10  + 1);
 
   HBRUSH NewBrush = CreateSolidBrush(RGB(255, 255, 255));
   HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
   Ellipse(Hdc, 650 - 26, 45 - 26, 650 + 26, 45 + 26);
-  
+
   NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
   OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
-  Ellipse(Hdc, 650 - PenWidth, 45 - PenWidth, 650 + PenWidth, 45 + PenWidth);
+  Ellipse(Hdc, 650 - PenWidthEdited, 45 - PenWidthEdited, 650 + PenWidthEdited,
+          45 + PenWidthEdited);
 
   SelectObject(Hdc, OldBrush);
   DeleteObject(NewBrush);
-  
+
   wchar_t Text[15];
   wsprintfW(Text, L"W%02d", PenWidth);
   TextOutW(Hdc, 460, 45, Text, lstrlenW(Text));
