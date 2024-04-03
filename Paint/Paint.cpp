@@ -127,6 +127,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
 
     int wmId = LOWORD(wParam);
     switch (wmId) {
+    case ID_FILE_SAVE:
+      if (!trySave(hWnd)) {
+        MessageBox(hWnd, L"파일 저장 실패!", L"오류", MB_OK);
+      }
+      break;
     case ID_OPTION_FILLSHAPE:
       FillShape = 1;
       break;
@@ -508,4 +513,94 @@ void loadBackground(HWND HWnd) {
   DeleteObject(hbmMem);
   DeleteDC(hdcMem);
   ReleaseDC(HWnd, hdcWindow);
+}
+
+bool trySave(HWND HWnd) {
+  OPENFILENAME OfnData;
+  ZeroMemory(&OfnData, sizeof(OPENFILENAME));
+  OfnData.lStructSize = sizeof(OPENFILENAME);
+  OfnData.hwndOwner = HWnd;
+  OfnData.lpstrFilter = L"Bitmap Files (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0";
+  OfnData.nFilterIndex = 1;
+  OfnData.lpstrFile = NULL;
+  OfnData.nMaxFile = 0;
+  OfnData.lpstrDefExt = L"bmp";
+  OfnData.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
+
+  TCHAR FileName[MAX_PATH] = L"";
+  OfnData.lpstrFile = FileName;
+  OfnData.nMaxFile = MAX_PATH;
+
+  if (GetSaveFileName(&OfnData) == TRUE) {
+    RECT WindowRect;
+    GetWindowRect(HWnd, &WindowRect);
+    int Width = WindowRect.right - WindowRect.left;
+    int Height = WindowRect.bottom - WindowRect.top;
+
+    HDC ScreenDC = GetDC(NULL);
+    HDC MemDC = CreateCompatibleDC(ScreenDC);
+    HBITMAP MemBitmap = CreateCompatibleBitmap(ScreenDC, Width, Height);
+    HBITMAP OldBitmap = (HBITMAP)SelectObject(MemDC, MemBitmap);
+
+    BitBlt(MemDC, 0, 0, Width, Height, ScreenDC, 0, 0, SRCCOPY);
+
+    BITMAPFILEHEADER BfHeader;
+    BITMAPINFOHEADER BiHeader;
+    BITMAP Bitmap;
+    GetObject(MemBitmap, sizeof(BITMAP), &Bitmap);
+
+    BfHeader.bfType = 0x4D42;
+    BfHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+    BfHeader.bfSize =
+        BfHeader.bfOffBits + Bitmap.bmWidthBytes * Bitmap.bmHeight;
+    BfHeader.bfReserved1 = 0;
+    BfHeader.bfReserved2 = 0;
+
+    BiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    BiHeader.biWidth = Bitmap.bmWidth;
+    BiHeader.biHeight = Bitmap.bmHeight;
+    BiHeader.biPlanes = 1;
+    BiHeader.biBitCount = Bitmap.bmBitsPixel;
+    BiHeader.biCompression = BI_RGB;
+    BiHeader.biSizeImage = Bitmap.bmWidthBytes * Bitmap.bmHeight;
+    BiHeader.biXPelsPerMeter = 0;
+    BiHeader.biYPelsPerMeter = 0;
+    BiHeader.biClrUsed = 0;
+    BiHeader.biClrImportant = 0;
+
+    HANDLE FileHandle = CreateFile(FileName, GENERIC_WRITE, 0, NULL,
+                                   CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (FileHandle != INVALID_HANDLE_VALUE) {
+      DWORD BytesWritten = 0;
+      WriteFile(FileHandle, &BfHeader, sizeof(BITMAPFILEHEADER), &BytesWritten,
+                NULL);
+      WriteFile(FileHandle, &BiHeader, sizeof(BITMAPINFOHEADER), &BytesWritten,
+                NULL);
+
+      BYTE *BitmapBits = new BYTE[BiHeader.biSizeImage];
+      if (GetDIBits(MemDC, MemBitmap, 0, BiHeader.biHeight, BitmapBits,
+                    (BITMAPINFO *)&BiHeader, DIB_RGB_COLORS)) {
+        BYTE *TempBuffer = new BYTE[Bitmap.bmWidthBytes];
+        for (int Y = 0; Y < BiHeader.biHeight; Y++) {
+          memcpy(TempBuffer, BitmapBits + Y * Bitmap.bmWidthBytes,
+                 Bitmap.bmWidthBytes);
+          memcpy(BitmapBits + (BiHeader.biHeight - Y - 1) * Bitmap.bmWidthBytes,
+                 TempBuffer, Bitmap.bmWidthBytes);
+        }
+        delete[] TempBuffer;
+
+        WriteFile(FileHandle, BitmapBits, BiHeader.biSizeImage, &BytesWritten,
+                  NULL);
+      }
+      delete[] BitmapBits;
+      CloseHandle(FileHandle);
+    }
+
+    SelectObject(MemDC, OldBitmap);
+    DeleteObject(MemBitmap);
+    DeleteDC(MemDC);
+    ReleaseDC(nullptr, ScreenDC);
+  }
+
+  return true;
 }

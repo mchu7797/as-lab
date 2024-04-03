@@ -29,6 +29,8 @@ void createRGBTable(long X, long Y, long Width, long Height, HMENU Id,
 void createWidthTable(long X, long Y, long Width, long Height, HMENU Id,
                       HWND HWnd, HINSTANCE HInstance);
 
+bool trySave(HWND HWnd);
+
 void setColor(HWND HWnd, HDC Hdc);
 void setWidth(HWND HWnd, HDC Hdc);
 void handleScroll(HWND HWnd, WPARAM WParam, LPARAM LParam);
