@@ -87,36 +87,52 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     break;
   case WM_LBUTTONDOWN:
     if (DrawMode > 2) {
-      Hdc = GetDC(hWnd);
-      IsDrawing = true;
-      draw(hWnd, Hdc, lParam);
-      IsDrawing = false;
-      ReleaseDC(hWnd, Hdc);
-      InvalidateRect(hWnd, nullptr, false);
-    } else {
-      IsDrawing = true;
-      MousePos[0] = GET_X_LPARAM(lParam);
-      MousePos[1] = GET_Y_LPARAM(lParam);
+      TempMousePos[0] = GET_X_LPARAM(lParam);
+      TempMousePos[1] = GET_Y_LPARAM(lParam);
+
+      if (TempMousePos[1] < 150) {
+        break;
+      }
+
+      saveBackground(hWnd);
     }
+
+    MousePos[0] = GET_X_LPARAM(lParam);
+    MousePos[1] = GET_Y_LPARAM(lParam);
+
+    IsDrawing = true;
     break;
   case WM_MOUSEMOVE:
     if (IsDrawing) {
+
       Hdc = GetDC(hWnd);
-      draw(hWnd, Hdc, lParam);
+
+      if (DrawMode == 3) {
+        drawRectangle(hWnd, Hdc, lParam);
+      } else if (DrawMode == 4) {
+        drawEllapse(hWnd, Hdc, lParam);
+      } else {
+        draw(hWnd, Hdc, lParam);
+      }
+
       ReleaseDC(hWnd, Hdc);
       InvalidateRect(hWnd, nullptr, false);
     }
     break;
   case WM_LBUTTONUP:
-    if (DrawMode < 3) {
-      IsDrawing = false;
-    }
+    IsDrawing = false;
     break;
   case WM_COMMAND: {
     handleDrawMode(hWnd, wParam, lParam);
 
     int wmId = LOWORD(wParam);
     switch (wmId) {
+    case ID_OPTION_FILLSHAPE:
+      FillShape = 1;
+      break;
+    case ID_OPTION_EMPTYSHAPE:
+      FillShape = 0;
+      break;
     case IDM_ABOUT:
       DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
       break;
@@ -159,6 +175,54 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
   return (INT_PTR)FALSE;
 }
 
+void drawRectangle(HWND HWnd, HDC Hdc, LPARAM LParam) {
+  loadBackground(HWnd);
+  HPEN NewPen = CreatePen(PS_SOLID, 2, RGB(Red, Green, Blue));
+  HPEN OldPen = (HPEN)SelectObject(Hdc, NewPen);
+
+  HBRUSH NewBrush, OldBrush;
+
+  if (FillShape) {
+    NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
+    OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+  } else {
+    NewBrush = (HBRUSH)GetStockObject(NULL_BRUSH);
+    OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+  }
+
+  MousePos[0] = GET_X_LPARAM(LParam);
+  MousePos[1] = GET_Y_LPARAM(LParam);
+  Rectangle(Hdc, TempMousePos[0], TempMousePos[1], MousePos[0], MousePos[1]);
+  SelectObject(Hdc, OldPen);
+  SelectObject(Hdc, OldBrush);
+  DeleteObject(NewPen);
+  DeleteObject(OldBrush);
+}
+
+void drawEllapse(HWND HWnd, HDC Hdc, LPARAM LParam) {
+  loadBackground(HWnd);
+  HPEN NewPen = CreatePen(PS_SOLID, 2, RGB(Red, Green, Blue));
+  HPEN OldPen = (HPEN)SelectObject(Hdc, NewPen);
+
+  HBRUSH NewBrush, OldBrush;
+
+  if (FillShape) {
+    NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
+    OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+  } else {
+    NewBrush = (HBRUSH)GetStockObject(NULL_BRUSH);
+    OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
+  }
+
+  MousePos[0] = GET_X_LPARAM(LParam);
+  MousePos[1] = GET_Y_LPARAM(LParam);
+  Ellipse(Hdc, TempMousePos[0], TempMousePos[1], MousePos[0], MousePos[1]);
+  SelectObject(Hdc, OldPen);
+  SelectObject(Hdc, OldBrush);
+  DeleteObject(NewPen);
+  DeleteObject(OldBrush);
+}
+
 void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
   if (!IsDrawing || DrawMode == 0) {
     return;
@@ -187,24 +251,8 @@ void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
     LineTo(Hdc, MousePos[0], MousePos[1]);
     SelectObject(Hdc, OldPen);
     DeleteObject(NewPen);
-  } else if (DrawMode == 3) {
-    HBRUSH NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
-    HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
-    MousePos[0] = GET_X_LPARAM(LParam);
-    MousePos[1] = GET_Y_LPARAM(LParam);
-    Rectangle(Hdc, MousePos[0] - PenWidth, MousePos[1] - PenWidth,
-              MousePos[0] + PenWidth, MousePos[1] + PenWidth);
-    SelectObject(Hdc, OldBrush);
-    DeleteObject(NewBrush);
   } else {
-    HBRUSH NewBrush = CreateSolidBrush(RGB(Red, Green, Blue));
-    HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
-    MousePos[0] = GET_X_LPARAM(LParam);
-    MousePos[1] = GET_Y_LPARAM(LParam);
-    Ellipse(Hdc, MousePos[0] - PenWidth, MousePos[1] - PenWidth,
-            MousePos[0] + PenWidth, MousePos[1] + PenWidth);
-    SelectObject(Hdc, OldBrush);
-    DeleteObject(NewBrush);
+    return;
   }
 
   wchar_t Buffer[100];
@@ -271,7 +319,7 @@ void setColor(HWND HWnd, HDC Hdc) {
 void setWidth(HWND HWnd, HDC Hdc) {
   PenWidth = GetScrollPos(FindWindowExW(HWnd, nullptr, L"Scrollbar", L"Width"),
                           SB_CTL);
-  int PenWidthEdited = (int)(PenWidth / 10  + 1);
+  int PenWidthEdited = (int)(PenWidth / 10 + 1);
 
   HBRUSH NewBrush = CreateSolidBrush(RGB(255, 255, 255));
   HBRUSH OldBrush = (HBRUSH)SelectObject(Hdc, NewBrush);
@@ -384,4 +432,80 @@ void handleScroll(HWND HWnd, WPARAM WParam, LPARAM LParam) {
     SetScrollPos((HWND)LParam, SB_CTL, HIWORD(WParam), true);
     break;
   }
+}
+
+void saveBackground(HWND HWnd) {
+  if (BackgroundData != nullptr) {
+    free(BackgroundData);
+  }
+
+  HDC hdcWindow = GetDC(HWnd);
+  RECT rect;
+  GetWindowRect(HWnd, &rect);
+
+  int width = rect.right - rect.left;
+  int height = rect.bottom - rect.top;
+
+  HDC hdcMem = CreateCompatibleDC(hdcWindow);
+  HBITMAP hbmMem = CreateCompatibleBitmap(hdcWindow, width, height);
+  HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbmMem);
+
+  BitBlt(hdcMem, 0, 0, width, height, hdcWindow, 0, 0, SRCCOPY | CAPTUREBLT);
+
+  BITMAPINFO bi;
+  bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+  bi.bmiHeader.biWidth = width;
+  bi.bmiHeader.biHeight = -height;
+  bi.bmiHeader.biPlanes = 1;
+  bi.bmiHeader.biBitCount = 32;
+  BackgroundDataSize = bi.bmiHeader.biBitCount;
+  bi.bmiHeader.biCompression = BI_RGB;
+  bi.bmiHeader.biSizeImage = 0;
+
+  int bitmapDataSize = width * height * (BackgroundDataSize / 8);
+  char *bitmapData = new char[bitmapDataSize];
+
+  GetDIBits(hdcMem, hbmMem, 0, height, bitmapData, &bi, DIB_RGB_COLORS);
+
+  SelectObject(hdcMem, hbmOld);
+  DeleteObject(hbmMem);
+  DeleteDC(hdcMem);
+  ReleaseDC(HWnd, hdcWindow);
+
+  BackgroundData = bitmapData;
+}
+
+void loadBackground(HWND HWnd) {
+  if (BackgroundData == nullptr) {
+    return;
+  }
+
+  HDC hdcWindow = GetDC(HWnd);
+  HDC hdcMem = CreateCompatibleDC(hdcWindow);
+
+  RECT rect;
+  GetWindowRect(HWnd, &rect);
+
+  int width = rect.right - rect.left;
+  int height = rect.bottom - rect.top;
+
+  BITMAPINFO bi;
+  bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+  bi.bmiHeader.biWidth = width;
+  bi.bmiHeader.biHeight = -height; // 위쪽부터 아래로 향하는 비트맵 데이터
+  bi.bmiHeader.biPlanes = 1;
+  bi.bmiHeader.biBitCount = BackgroundDataSize;
+  bi.bmiHeader.biCompression = BI_RGB;
+  bi.bmiHeader.biSizeImage = 0;
+
+  HBITMAP hbmMem = CreateDIBitmap(hdcWindow, &bi.bmiHeader, CBM_INIT,
+                                  BackgroundData, &bi, DIB_RGB_COLORS);
+  HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbmMem);
+
+  BitBlt(hdcWindow, 0, 0, width, height, hdcMem, 0, 0, SRCCOPY);
+
+  SelectObject(hdcMem, hbmOld);
+  DeleteObject(hbmMem);
+  DeleteDC(hdcMem);
+  ReleaseDC(HWnd, hdcWindow);
 }

@@ -16,6 +16,12 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 
 void draw(HWND HWnd, HDC Hdc, LPARAM LParam);
+void drawRectangle(HWND HWnd, HDC Hdc, LPARAM LParam);
+void drawEllapse(HWND HWnd, HDC Hdc, LPARAM LParam);
+
+void saveBackground(HWND HWnd);
+void loadBackground(HWND HWnd);
+
 void createButton(const wchar_t *Name, long X, long Y, long Width, long Height,
                   HMENU Id, HWND HWnd, HINSTANCE HInstance);
 void createRGBTable(long X, long Y, long Width, long Height, HMENU Id,
@@ -28,10 +34,16 @@ void setWidth(HWND HWnd, HDC Hdc);
 void handleScroll(HWND HWnd, WPARAM WParam, LPARAM LParam);
 void handleDrawMode(HWND HWnd, WPARAM WParam, LPARAM LParam);
 
+char *BackgroundData;
+long BackgroundDataSize;
+
 int MousePos[2];
+int TempMousePos[2];
 int PenWidth = 10;
 int Red, Green, Blue;
 bool IsDrawing = false;
+bool IsResizing = false;
 int DrawMode = 0;
+int FillShape = 0;
 
 #endif
