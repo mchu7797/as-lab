@@ -30,6 +30,7 @@ void createWidthTable(long X, long Y, long Width, long Height, HMENU Id,
                       HWND HWnd, HINSTANCE HInstance);
 
 bool trySave(HWND HWnd);
+bool tryOpen(HWND HWnd);
 
 void setColor(HWND HWnd, HDC Hdc);
 void setWidth(HWND HWnd, HDC Hdc);
