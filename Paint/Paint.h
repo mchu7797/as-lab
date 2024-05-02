@@ -37,6 +37,8 @@ void setWidth(HWND HWnd, HDC Hdc);
 void handleScroll(HWND HWnd, WPARAM WParam, LPARAM LParam);
 void handleDrawMode(HWND HWnd, WPARAM WParam, LPARAM LParam);
 
+LPARAM TempParam;
+
 char *BackgroundData;
 long BackgroundDataSize;
 

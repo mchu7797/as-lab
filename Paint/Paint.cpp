@@ -104,18 +104,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     break;
   case WM_MOUSEMOVE:
     if (IsDrawing) {
-
-      Hdc = GetDC(hWnd);
-
-      if (DrawMode == 3) {
-        drawRectangle(hWnd, Hdc, lParam);
-      } else if (DrawMode == 4) {
-        drawEllapse(hWnd, Hdc, lParam);
-      } else {
-        draw(hWnd, Hdc, lParam);
-      }
-
-      ReleaseDC(hWnd, Hdc);
+      TempParam = lParam;
       InvalidateRect(hWnd, nullptr, false);
     }
     break;
@@ -158,6 +147,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     HDC hdc = BeginPaint(hWnd, &ps);
     setColor(hWnd, hdc);
     setWidth(hWnd, hdc);
+
+    if (IsDrawing) {
+      if (DrawMode == 3) {
+        drawRectangle(hWnd, hdc, TempParam);
+      } else if (DrawMode == 4) {
+        drawEllapse(hWnd, hdc, TempParam);
+      } else {
+        draw(hWnd, hdc, TempParam);
+      }
+    }
+
     EndPaint(hWnd, &ps);
   } break;
   case WM_DESTROY:
@@ -207,6 +207,7 @@ void drawRectangle(HWND HWnd, HDC Hdc, LPARAM LParam) {
   SelectObject(Hdc, OldBrush);
   DeleteObject(NewPen);
   DeleteObject(OldBrush);
+  DeleteObject(NewBrush);
 }
 
 void drawEllapse(HWND HWnd, HDC Hdc, LPARAM LParam) {
@@ -231,6 +232,7 @@ void drawEllapse(HWND HWnd, HDC Hdc, LPARAM LParam) {
   SelectObject(Hdc, OldBrush);
   DeleteObject(NewPen);
   DeleteObject(OldBrush);
+  DeleteObject(NewBrush);
 }
 
 void draw(HWND HWnd, HDC Hdc, LPARAM LParam) {
@@ -342,6 +344,7 @@ void setWidth(HWND HWnd, HDC Hdc) {
 
   SelectObject(Hdc, OldBrush);
   DeleteObject(NewBrush);
+  DeleteObject(OldBrush);
 
   wchar_t Text[15];
   wsprintfW(Text, L"W%02d", PenWidth);
