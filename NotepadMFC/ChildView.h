@@ -50,9 +50,9 @@ private:
 	int TempCaretPosXChar;
 	int TempCaretPosYChar;
 
-	void UpdateCaret(CWnd *pWnd, int MousePosX, int MousePosY);
-	void UpdateScrollRange(CWnd *pWnd);
-	void GetWindowSize(CWnd *pWnd, int* WindowHeight, int* WindowWidth);
-	void GetFontSize(CWnd *pWnd, WCHAR character, int* height, int* width);
+	void UpdateCaret(int MousePosX, int MousePosY);
+	void UpdateScrollRange();
+	void GetWindowSize(int* WindowHeight, int* WindowWidth);
+	void GetFontSize(WCHAR character, int* height, int* width);
 };
 
