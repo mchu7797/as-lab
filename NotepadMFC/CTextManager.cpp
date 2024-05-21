@@ -1,164 +1,158 @@
 #include "pch.h"
 #include "CTextManager.h"
 
+#include <vector>
+
 CTextManager::CTextManager() {
-	m_IsOverrideMode = false;
-	m_TextBoard.clear();
-	m_TextBoard.push_back(L"");
+	TextBoard = std::vector<CString>();
+
+	TextBoard.push_back(L"");
+
+	IsOverrideMode = false;
 }
 
-CString CTextManager::GetText(int row) {
-	if (row < 0 || row >= m_TextBoard.size()) {
+size_t CTextManager::getMaxHeight() { return TextBoard.size(); }
+
+CString CTextManager::getLongestLine() {
+	size_t MaxWidth = 0;
+	std::vector<CString>::iterator LongestLine = TextBoard.begin();
+
+	for (std::vector<CString>::iterator iter = TextBoard.begin();
+		iter != TextBoard.end(); ++iter) {
+		if (MaxWidth < iter->GetLength()) {
+			MaxWidth = iter->GetLength();
+			LongestLine = iter;
+		}
+	}
+
+	return *LongestLine;
+}
+
+CString CTextManager::getText(int Row) {
+	if (Row < 0 || Row >= TextBoard.size()) {
 		return L"";
 	}
-	return m_TextBoard[row];
+
+	return TextBoard[Row];
 }
 
-CString CTextManager::GetLongestLine() {
-	size_t maxWidth = 0;
-	auto longestLine = m_TextBoard.begin();
-	for (auto iter = m_TextBoard.begin(); iter != m_TextBoard.end(); ++iter) {
-		if (maxWidth < iter->GetLength()) {
-			maxWidth = iter->GetLength();
-			longestLine = iter;
-		}
-	}
-
-	return *longestLine;
-}
-
-size_t CTextManager::GetMaxHeight() {
-	return m_TextBoard.size();
-}
-
-std::vector<CString>::iterator CTextManager::begin() {
-	return m_TextBoard.begin();
-}
-
-std::vector<CString>::iterator CTextManager::end() {
-	return m_TextBoard.end();
-}
-
-size_t CTextManager::size() {
-	return m_TextBoard.size();
-}
-
-void CTextManager::AppendString(const CString& string) {
-	m_TextBoard.push_back(string);
-}
-
-void CTextManager::Clear() {
-	m_TextBoard.clear();
-}
-
-void CTextManager::HandleWrite(TCHAR character, int x, int y) {
-	if (y < 0 || y > m_TextBoard.size()) {
-		return;
-	}
-	if (x < 0) {
+void CTextManager::handleWrite(wchar_t Character, int X, int Y) {
+	if (Y < 0 || Y > TextBoard.size()) {
 		return;
 	}
 
-	if (x > m_TextBoard[y].GetLength()) {
-		m_TextBoard[y].AppendChar(character);
-	}
-
-	if (m_IsOverrideMode) {
-		m_TextBoard[y].Delete(x);
-	}
-
-	m_TextBoard[y].Insert(x, CString(character));
-}
-
-void CTextManager::HandleHitEnter(int x, int y) {
-	if (y < 0) {
+	if (X < 0) {
 		return;
 	}
-	if (y > m_TextBoard.size() - 1) {
-		m_TextBoard.push_back(CString());
+
+	if (X > TextBoard[Y].GetLength()) {
+		TextBoard[X].AppendChar(Character);
 	}
 
-	if (x > m_TextBoard[y].GetLength()) {
-		m_TextBoard.insert(m_TextBoard.begin() + y, CString());
+	if (IsOverrideMode) {
+		TextBoard[Y].Delete(X, 1);
 	}
 
-	CString temp = m_TextBoard[y].Mid(x);
-	m_TextBoard[y].Delete(x, m_TextBoard[y].GetLength() - x);
+	TextBoard[Y].Insert(X, Character);
+}
 
-	if (y > m_TextBoard.size() - 1) {
-		m_TextBoard.push_back(temp);
+void CTextManager::handleHitEnter(int X, int Y) {
+	if (Y < 0) {
+		return;
+	}
+
+	if (Y > TextBoard.size() - 1) {
+		TextBoard.push_back(CString());
+	}
+
+	if (X > TextBoard[Y].GetLength()) {
+		TextBoard.insert(TextBoard.begin(), Y, CString());
+	}
+
+	CString temp = TextBoard[Y].Mid(X);
+	TextBoard[Y].Delete(X, TextBoard[Y].GetLength() - X);
+
+	if (Y > TextBoard.size() - 1) {
+		TextBoard.push_back(temp);
 	}
 	else {
-		m_TextBoard.insert(m_TextBoard.begin() + y + 1, temp);
+		TextBoard.insert(TextBoard.begin() + Y + 1, temp);
 	}
 }
 
-void CTextManager::HandleHitBackspace(int x, int y) {
-	if (y < 0 || y > m_TextBoard.size()) {
-		return;
-	}
-	if (x < 0) {
+void CTextManager::handleHitBackspace(int X, int Y) {
+	if (Y < 0 || Y > TextBoard.size()) {
 		return;
 	}
 
-	if (x == 0) {
-		if (y == 0) {
+	if (X < 0) {
+		return;
+	}
+
+	if (X == 0) {
+		if (Y == 0) {
 			return;
 		}
 
-		if (m_TextBoard[y].GetLength() > 0) {
-			m_TextBoard[y - 1].Append(m_TextBoard[y]);
-			m_TextBoard.erase(m_TextBoard.begin() + y);
+		if (TextBoard[Y].GetLength() > 0) {
+			TextBoard[Y - 1].Append(TextBoard[Y]);
+			TextBoard.erase(TextBoard.begin() + Y);
 		}
 		else {
-			m_TextBoard.erase(m_TextBoard.begin() + y);
+			TextBoard.erase(TextBoard.begin() + Y);
 		}
 
 		return;
 	}
 
-	if (x > m_TextBoard[y].GetLength()) {
-		m_TextBoard[y].Delete(m_TextBoard[y].GetLength() - 1);
+	if (X > TextBoard[Y].GetLength()) {
+		if (!TextBoard[Y].IsEmpty()) {
+			TextBoard[Y] = TextBoard[Y].Left(TextBoard[Y].GetLength() - 1);
+		}
 		return;
 	}
 
-	m_TextBoard[y].Delete(x - 1);
+	TextBoard[Y].Delete(X - 1, 1);
 }
 
-void CTextManager::HandleHitTab(int x, int y) {
-	if (y < 0 || y > m_TextBoard.size()) {
-		return;
-	}
-	if (x < 0) {
+void CTextManager::handleHitTab(int X, int Y) {
+	if (Y < 0 || Y > TextBoard.size()) {
 		return;
 	}
 
-	if (x > m_TextBoard[y].GetLength()) {
-		m_TextBoard[y].Append(L"        ");
+	if (X < 0) {
 		return;
 	}
 
-	m_TextBoard[y].Insert(x, L"        ");
+	if (X > TextBoard[Y].GetLength()) {
+		TextBoard[Y].Append(L"        ");
+		return;
+	}
+
+	TextBoard[Y].Insert(X, L"        ");
 }
 
-void CTextManager::HandleHitInsert() {
-	m_IsOverrideMode = !m_IsOverrideMode;
-}
+void CTextManager::handleHitInsert() { IsOverrideMode = !IsOverrideMode; }
 
-void CTextManager::HandleHitDelete(int x, int y) {
-	if (y < 0 || y > m_TextBoard.size()) {
+void CTextManager::handleHitDelete(int X, int Y) {
+	if (Y < 0 || Y > TextBoard.size()) {
 		return;
 	}
-	if (x >= m_TextBoard[y].GetLength()) {
-		if (y + 1 > m_TextBoard.size()) {
+
+	if (X >= TextBoard[Y].GetLength()) {
+		if (Y + 1 > TextBoard.size()) {
 			return;
 		}
 
-		m_TextBoard[y].Append(m_TextBoard[y + 1]);
-		m_TextBoard.erase(m_TextBoard.begin() + y + 1);
+		TextBoard[Y].Append(TextBoard[Y + 1]);
+		TextBoard.erase(TextBoard.begin() + Y + 1);
 
 		return;
 	}
 
-	m_TextBoard[y].Delete(x);
+	TextBoard[Y].Delete(X, 1);
+}
+
+void CTextManager::clear() {
+	TextBoard.clear();
 }

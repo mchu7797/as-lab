@@ -11,46 +11,48 @@
 
 class CChildView : public CWnd
 {
-// Construction
+	// Construction
 public:
 	CChildView();
-
-// Attributes
+	// Attributes
 public:
-
-// Operations
+	// Operations
 public:
-
-// Overrides
-	protected:
+	// Overrides
+protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-
-// Implementation
+	// Implementation
 public:
 	virtual ~CChildView();
-
 	// Generated message map functions
 protected:
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 public:
+	afx_msg void OnFileOpen();
+	afx_msg void OnFileSave();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnKillFocus(CWnd* pNewWnd);
 private:
-	void UpdateCaret(int mouseX, int mouseY);
-	void UpdateScrollRange();
-	void GetFontSize(CDC* dc, TCHAR character, int& height, int& width);
-	CTextManager* m_CTextManager;
-	int m_nCaretPosX;
-	int m_nCaretPosY;
-	int m_nTextPosX;
-	int m_nTextPosY;
-	CFont m_Font;
+	CTextManager TextBoard;
+	long TextPosX;
+	long TextPosY;
+	int CurrentXPos;
+	int CurrentYPos;
+	int CaretPosXByChar;
+	int CaretPosYByChar;
+	int TempCaretPosXChar;
+	int TempCaretPosYChar;
+
+	void UpdateCaret(CWnd *pWnd, int MousePosX, int MousePosY);
+	void UpdateScrollRange(CWnd *pWnd);
+	void GetWindowSize(CWnd *pWnd, int* WindowHeight, int* WindowWidth);
+	void GetFontSize(CWnd *pWnd, WCHAR character, int* height, int* width);
 };
 

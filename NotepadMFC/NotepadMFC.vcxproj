@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectGuid>{89FBDD7E-B38E-474D-97C6-300154F88483}</ProjectGuid>
+    <ProjectGuid>{1003BD5A-20C0-4FF7-A237-64DC317029A0}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <RootNamespace>NotepadMFC</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>

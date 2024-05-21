@@ -1,28 +1,32 @@
 #pragma once
-#include <vector>
-#include "framework.h"
 
-class CTextManager {
+#include <vector>
+
+class CTextManager
+{
 public:
 	CTextManager();
-	CString GetText(int row);
-	CString GetLongestLine();
-	size_t GetMaxHeight();
 
-	std::vector<CString>::iterator begin();
-	std::vector<CString>::iterator end();
-	size_t size();
+	CString getText(int Row);
+	CString getLongestLine();
+	size_t getMaxHeight();
 
-	void AppendString(const CString& string);
-	void Clear();
+	std::vector<CString>::iterator begin() { return TextBoard.begin(); }
+	std::vector<CString>::iterator end() { return TextBoard.end(); }
+	size_t size() { return TextBoard.size(); }
 
-	void HandleWrite(TCHAR character, int x, int y);
-	void HandleHitEnter(int x, int y);
-	void HandleHitBackspace(int x, int y);
-	void HandleHitTab(int x, int y);
-	void HandleHitInsert();
-	void HandleHitDelete(int x, int y);
-protected:
-	bool m_IsOverrideMode;
-	std::vector<CString> m_TextBoard;
+	void appendString(CString string) { TextBoard.push_back(string); }
+	void clear();
+
+	void handleWrite(wchar_t Character, int X, int Y);
+	void handleHitEnter(int X, int Y);
+	void handleHitBackspace(int X, int Y);
+	void handleHitTab(int X, int Y);
+	void handleHitInsert();
+	void handleHitDelete(int X, int Y);
+
+private:
+	bool IsOverrideMode;
+	std::vector<CString> TextBoard;
 };
+
