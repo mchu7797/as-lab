@@ -67,9 +67,35 @@ void CChildView::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
-	// TODO: Add your message handler code here
+	TEXTMETRIC TextMetric;
 
-	// Do not call CWnd::OnPaint() for painting messages
+	dc.GetTextMetrics(&TextMetric);
+
+	/* 커서 배치하기 */
+	CString CurrentString = TextBoard.getText(CaretPosYByChar);
+
+	int CaretPosXByPixel = 0;
+	int CharWidth, CharHeight;
+
+	for (int i = 0; i < CaretPosXByChar; ++i) {
+		if (CaretPosXByChar > CurrentString.GetLength()) {
+			break;
+		}
+
+		GetFontSize(CurrentString[i], nullptr, &CharWidth);
+		CaretPosXByPixel += CharWidth;
+	}
+
+	CWnd::SetCaretPos({ CaretPosXByPixel, TextMetric.tmHeight * CaretPosYByChar });
+	CWnd::ShowCaret();
+
+	/* 글자 그리기 */
+	for (int i = 0; i < TextBoard.size(); i++)
+	{
+		CString str = TextBoard.getText(i);
+
+		dc.TextOutW(TextPosX, TextPosY + (i * TextMetric.tmHeight), str, str.GetLength());
+	}
 }
 
 void CChildView::OnFileOpen()
@@ -176,7 +202,7 @@ void CChildView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	{
 		CWnd::ScrollWindow(15 * (CurrentXPos - ScrollInfo.nPos), 0, nullptr, nullptr);
 		TextPosX = -ScrollInfo.nPos;
-		Invalidate(false);
+		Invalidate();
 	}
 
 	CWnd::OnHScroll(nSBCode, nPos, pScrollBar);
@@ -228,7 +254,7 @@ void CChildView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	{
 		CWnd::ScrollWindow(15 * (CurrentYPos - ScrollInfo.nPos), 0, nullptr, nullptr);
 		TextPosY = -ScrollInfo.nPos;
-		Invalidate(false);
+		Invalidate();
 	}
 
 	CWnd::OnVScroll(nSBCode, nPos, pScrollBar);
@@ -252,7 +278,7 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 
 	UpdateCaret(point.x, point.y);
-	CWnd::Invalidate(true);
+	CWnd::Invalidate();
 
 	CWnd::OnLButtonDown(nFlags, point);
 }
@@ -290,13 +316,248 @@ void CChildView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		CWnd::SetScrollInfo(SB_HORZ, &ScrollInfo, true);
 	}
 
-	Invalidate(false);
+	Invalidate();
 }
 
 
 void CChildView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	// TODO: Add your message handler code here and/or call default
+	CPoint currentCaretPos;
+	CClientDC DeviceContext(this);
+	TEXTMETRIC TextMetric;
+	SCROLLINFO ScrollInfo;
+
+	int WindowHeight, WindowWidth;
+	int FontHeight, FontWidth;
+	int TempCaretPosXChar, TempCaretPosYChar;
+
+	switch (nChar)
+	{
+	case VK_UP:
+		if (CaretPosYByChar > 0)
+		{
+			--CaretPosYByChar;
+		}
+
+		if (TextBoard.getText(CaretPosYByChar).GetLength() < CaretPosXByChar + 1)
+		{
+			CaretPosXByChar = TextBoard.getText(CaretPosYByChar).GetLength();
+		}
+
+		currentCaretPos = CWnd::GetCaretPos();
+		GetWindowSize(&WindowHeight, nullptr);
+		DeviceContext.GetTextMetrics(&TextMetric);
+
+		if (currentCaretPos.y < 20 && TextPosY < 0)
+		{
+			TextPosY += TextMetric.tmHeight;
+			UpdateScrollRange();
+
+			memset(&ScrollInfo, 0, sizeof(ScrollInfo));
+			ScrollInfo.cbSize = sizeof(ScrollInfo);
+			ScrollInfo.fMask = SIF_ALL;
+
+			CWnd::GetScrollInfo(SB_VERT, &ScrollInfo);
+			ScrollInfo.nPos -= TextMetric.tmHeight + TextMetric.tmExternalLeading + TextMetric.tmInternalLeading;
+			CWnd::SetScrollInfo(SB_VERT, &ScrollInfo, true);
+		}
+
+		Invalidate();
+		break;
+	case VK_DOWN:
+		if (CaretPosYByChar < TextBoard.size() - 1)
+		{
+			++CaretPosYByChar;
+		}
+
+		if (TextBoard.getText(CaretPosYByChar).GetLength() < CaretPosXByChar + 1)
+		{
+			CaretPosXByChar = TextBoard.getText(CaretPosYByChar).GetLength();
+		}
+
+		currentCaretPos = CWnd::GetCaretPos();
+		GetWindowSize(&WindowHeight, nullptr);
+		DeviceContext.GetTextMetrics(&TextMetric);
+
+		if (currentCaretPos.y > WindowHeight - 20 && CaretPosYByChar < TextBoard.size())
+		{
+			TextPosY -= TextMetric.tmHeight;
+			UpdateScrollRange();
+
+			memset(&ScrollInfo, 0, sizeof(ScrollInfo));
+			ScrollInfo.cbSize = sizeof(ScrollInfo);
+			ScrollInfo.fMask = SIF_ALL;
+
+			CWnd::GetScrollInfo(SB_VERT, &ScrollInfo);
+			ScrollInfo.nPos += TextMetric.tmHeight + TextMetric.tmExternalLeading + TextMetric.tmInternalLeading;
+			CWnd::SetScrollInfo(SB_VERT, &ScrollInfo, true);
+		}
+
+		Invalidate();
+		break;
+	case VK_LEFT:
+		if (CaretPosXByChar > 0)
+		{
+			--CaretPosXByChar;
+		}
+
+		currentCaretPos = CWnd::GetCaretPos();
+		GetWindowSize(nullptr, &WindowWidth);
+
+		GetFontSize(TextBoard.getText(CaretPosYByChar)[CaretPosXByChar], nullptr, &FontWidth);
+
+		if (currentCaretPos.x <= 20 && CaretPosXByChar < 0)
+		{
+			TextPosX -= FontWidth;
+			UpdateScrollRange();
+
+			memset(&ScrollInfo, 0, sizeof(ScrollInfo));
+			ScrollInfo.cbSize = sizeof(ScrollInfo);
+			ScrollInfo.fMask = SIF_ALL;
+
+			CWnd::GetScrollInfo(SB_HORZ, &ScrollInfo);
+			ScrollInfo.nPos = ScrollInfo.nMin;
+			CWnd::SetScrollInfo(SB_HORZ, &ScrollInfo, true);
+		}
+
+		Invalidate();
+		break;
+	case VK_RIGHT:
+		if (CaretPosXByChar < TextBoard.getText(CaretPosYByChar).GetLength())
+		{
+			++CaretPosXByChar;
+		}
+
+		currentCaretPos = CWnd::GetCaretPos();
+		GetWindowSize(nullptr, &WindowWidth);
+
+		GetFontSize(TextBoard.getText(CaretPosYByChar)[CaretPosXByChar], nullptr, &FontWidth);
+
+		if (currentCaretPos.x <= WindowWidth - 20 && CaretPosXByChar < TextBoard.getText(CaretPosYByChar).GetLength())
+		{
+			TextPosX -= FontWidth;
+			UpdateScrollRange();
+
+			memset(&ScrollInfo, 0, sizeof(ScrollInfo));
+			ScrollInfo.cbSize = sizeof(ScrollInfo);
+			ScrollInfo.fMask = SIF_ALL;
+
+			CWnd::GetScrollInfo(SB_HORZ, &ScrollInfo);
+			ScrollInfo.nPos = ScrollInfo.nMax;
+			CWnd::SetScrollInfo(SB_HORZ, &ScrollInfo, true);
+		}
+
+		Invalidate();
+		break;
+	case VK_BACK:
+		TempCaretPosXChar = CaretPosXByChar;
+		TempCaretPosYChar = CaretPosYByChar;
+
+		if (CaretPosXByChar > 0) {
+			--CaretPosXByChar;
+		}
+		else if (CaretPosYByChar > 0) {
+			--CaretPosYByChar;
+
+			if (TextBoard.getText(CaretPosYByChar).GetLength() != 0) {
+				CaretPosXByChar = TextBoard.getText(CaretPosYByChar).GetLength();
+			}
+			else {
+				CaretPosXByChar = 0;
+			}
+		}
+		else {
+			// Do nothing
+		}
+
+		TextBoard.handleHitBackspace(TempCaretPosXChar, TempCaretPosYChar);
+
+		currentCaretPos = CWnd::GetCaretPos();
+		GetWindowSize(nullptr, &WindowWidth);
+
+		GetFontSize(TextBoard.getText(CaretPosYByChar)[CaretPosXByChar], &FontHeight, &FontWidth);
+
+		if (currentCaretPos.x >= 20 && TextPosX < 0) {
+			TextPosX += FontWidth;
+			UpdateScrollRange();
+
+			memset(&ScrollInfo, 0, sizeof(ScrollInfo));
+			ScrollInfo.cbSize = sizeof(ScrollInfo);
+			ScrollInfo.fMask = SIF_ALL;
+
+			GetScrollInfo(SB_HORZ, &ScrollInfo);
+			ScrollInfo.nPos = ScrollInfo.nMax;
+			SetScrollInfo(SB_HORZ, &ScrollInfo, true);
+		}
+
+		Invalidate();
+		break;
+	case VK_TAB:
+		TextBoard.handleHitTab(CaretPosXByChar, CaretPosYByChar);
+		CaretPosXByChar += 8;
+		Invalidate();
+		break;
+	case VK_RETURN:
+		TextBoard.handleHitEnter(CaretPosXByChar, CaretPosYByChar);
+
+		CaretPosXByChar = 0;
+		++CaretPosYByChar;
+
+		currentCaretPos = GetCaretPos();
+		GetWindowSize(&WindowHeight, nullptr);
+		DeviceContext.GetTextMetrics(&TextMetric);
+
+		if (currentCaretPos.y >= WindowHeight - 20) {
+			TextPosY -= TextMetric.tmHeight + TextMetric.tmExternalLeading +
+				TextMetric.tmInternalLeading;
+			UpdateScrollRange();
+
+			memset(&ScrollInfo, 0, sizeof(ScrollInfo));
+			ScrollInfo.cbSize = sizeof(ScrollInfo);
+			ScrollInfo.fMask = SIF_ALL;
+
+			GetScrollInfo(SB_VERT, &ScrollInfo);
+			ScrollInfo.nPos = ScrollInfo.nMax;
+			SetScrollInfo(SB_VERT, &ScrollInfo, true);
+		}
+
+		if (TextPosX < 0) {
+			TextPosX = 0;
+			UpdateScrollRange();
+
+			memset(&ScrollInfo, 0, sizeof(ScrollInfo));
+			ScrollInfo.cbSize = sizeof(ScrollInfo);
+			ScrollInfo.fMask = SIF_ALL;
+
+			GetScrollInfo(SB_HORZ, &ScrollInfo);
+			ScrollInfo.nPos = ScrollInfo.nMin;
+			SetScrollInfo(SB_HORZ, &ScrollInfo, true);
+		}
+
+		Invalidate();
+		break;
+	case VK_HOME:
+		CaretPosXByChar = 0;
+		Invalidate();
+		break;
+	case VK_END:
+		if (TextBoard.getText(CaretPosYByChar).GetLength() != 0) {
+			CaretPosXByChar = TextBoard.getText(CaretPosYByChar).GetLength();
+		}
+		Invalidate();
+		break;
+	case VK_DELETE:
+		TextBoard.handleHitDelete(CaretPosXByChar, CaretPosYByChar);
+		Invalidate();
+		break;
+	case VK_INSERT:
+		TextBoard.handleHitInsert();
+		break;
+	default:
+		break;
+	}
+
+	UpdateScrollRange();
 
 	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
 }
