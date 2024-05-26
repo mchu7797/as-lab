@@ -79,6 +79,28 @@ void CChildView::OnPaint()
 
 void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 {
+    switch (m_drawMode)
+    {
+    case 0:
+        m_tempVector = CImageVector(1);
+        m_tempVector.SetPenConfig(RGB(m_redIntensity, m_greenIntensity, m_blueIntensity), m_penWidth / 5 + 1);
+        break;
+    case 1:
+        m_tempVector = CImageVector(1);
+        m_tempVector.SetPenConfig(RGB(255, 255, 255), 40);
+        break;
+    case 2:
+        m_tempVector = CImageVector(2);
+        m_tempVector.SetShapeConfig(RGB(m_redIntensity, m_greenIntensity, m_blueIntensity), m_doFillShape);
+        break;
+    case 3:
+        m_tempVector = CImageVector(3);
+        m_tempVector.SetShapeConfig(RGB(m_redIntensity, m_greenIntensity, m_blueIntensity), m_doFillShape);
+        break;
+    }
+
+    m_tempVector.AppendPoint(point);
+
     if (m_drawMode > 1)
     {
         m_tempMousePos.x = point.x;
@@ -96,6 +118,9 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
     m_isDrawing = false;
     ClearRectImage();
 
+    m_tempVector.AppendPoint(point);
+    m_vectorHistory.push_back(m_tempVector);
+
     CWnd::OnLButtonUp(nFlags, point);
 }
 
@@ -104,6 +129,9 @@ void CChildView::OnMouseMove(UINT nFlags, CPoint point)
     if (m_isDrawing)
     {
         m_mousePos = point;
+
+        m_tempVector.AppendPoint(point);
+
         Invalidate(false);
     }
 

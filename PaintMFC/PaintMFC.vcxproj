@@ -184,6 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ChildView.h" />
+    <ClInclude Include="ImageVector.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="PaintMFC.h" />
@@ -193,6 +194,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChildView.cpp" />
+    <ClCompile Include="ImageVector.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="PaintMFC.cpp" />
     <ClCompile Include="pch.cpp">
