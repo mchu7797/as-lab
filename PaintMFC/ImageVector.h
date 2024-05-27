@@ -5,6 +5,9 @@ class CImageVector
 public:
 	CImageVector(int shapeKind);
 	CImageVector();
+
+	int GetShapeKind() { return m_shapeKind; }
+
 	void AppendPoint(CPoint point);
 	void Draw(CClientDC& deviceContext);
 	void SetPenConfig(COLORREF color, int penWidth);
