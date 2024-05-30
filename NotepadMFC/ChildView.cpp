@@ -65,13 +65,29 @@ BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CChildView::OnPaint()
 {
-	CPaintDC dc(this); // device context for painting
+	CPaintDC dc(this);
 
+	// 메모리 DC 생성
+	CDC memDC;
+	memDC.CreateCompatibleDC(&dc);
+
+	// 메모리 비트맵 생성
+	CBitmap memBitmap;
+	CRect clientRect;
+	GetClientRect(&clientRect);
+	memBitmap.CreateCompatibleBitmap(&dc, clientRect.Width(), clientRect.Height());
+
+	// 메모리 DC에 메모리 비트맵 선택
+	CBitmap* pOldBitmap = memDC.SelectObject(&memBitmap);
+
+	// 메모리 DC의 배경색 설정
+	memDC.FillSolidRect(&clientRect, RGB(255, 255, 255));
+
+	// 메모리 DC에 그리기 작업 수행
 	TEXTMETRIC TextMetric;
+	memDC.GetTextMetrics(&TextMetric);
 
-	dc.GetTextMetrics(&TextMetric);
-
-	/* 커서 배치하기 */
+	// 커서 배치하기
 	CString CurrentString = TextBoard.getText(CaretPosYByChar);
 
 	int CaretPosXByPixel = 0;
@@ -89,13 +105,20 @@ void CChildView::OnPaint()
 	CWnd::SetCaretPos({ CaretPosXByPixel, TextMetric.tmHeight * CaretPosYByChar });
 	CWnd::ShowCaret();
 
-	/* 글자 그리기 */
+	// 글자 그리기
 	for (int i = 0; i < TextBoard.size(); i++)
 	{
 		CString str = TextBoard.getText(i);
-
-		dc.TextOutW(TextPosX, TextPosY + (i * TextMetric.tmHeight), str, str.GetLength());
+		memDC.TextOutW(TextPosX, TextPosY + (i * TextMetric.tmHeight), str, str.GetLength());
 	}
+
+	// 메모리 DC의 내용을 화면 DC로 복사
+	dc.BitBlt(0, 0, clientRect.Width(), clientRect.Height(), &memDC, 0, 0, SRCCOPY);
+
+	// 메모리 DC와 메모리 비트맵 해제
+	memDC.SelectObject(pOldBitmap);
+	memBitmap.DeleteObject();
+	memDC.DeleteDC();
 }
 
 void CChildView::OnFileOpen()
@@ -202,7 +225,7 @@ void CChildView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	{
 		CWnd::ScrollWindow(15 * (CurrentXPos - ScrollInfo.nPos), 0, nullptr, nullptr);
 		TextPosX = -ScrollInfo.nPos;
-		Invalidate();
+		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 	}
 
 	CWnd::OnHScroll(nSBCode, nPos, pScrollBar);
@@ -254,7 +277,7 @@ void CChildView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	{
 		CWnd::ScrollWindow(15 * (CurrentYPos - ScrollInfo.nPos), 0, nullptr, nullptr);
 		TextPosY = -ScrollInfo.nPos;
-		Invalidate();
+		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 	}
 
 	CWnd::OnVScroll(nSBCode, nPos, pScrollBar);
@@ -301,7 +324,7 @@ void CChildView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	GetWindowSize(nullptr, &WindowWidth);
 	GetFontSize(nChar, nullptr, &CharWidth);
 
-	if (CaretPos.x >= WindowWidth - 20)
+	if (CaretPos.x >= WindowWidth)
 	{
 		TextPosX -= CharWidth;
 		UpdateScrollRange();
@@ -657,6 +680,7 @@ void CChildView::UpdateScrollRange()
 	DeviceContext.GetTextMetricsW(&TextMetric);
 	GetWindowSize(&WindowHeight, &WindowWidth);
 
+	// 세로 스크롤 범위 설정
 	ScrollInfo.cbSize = sizeof(ScrollInfo);
 	ScrollInfo.fMask = SIF_RANGE | SIF_PAGE;
 	ScrollInfo.nMin = 0;
@@ -679,13 +703,33 @@ void CChildView::UpdateScrollRange()
 		TextPosY = 0;
 	}
 
+	// 가로 스크롤 범위 설정
 	CString LongestString = TextBoard.getLongestLine();
-	int FontHeight, FontWidth;
+	int FontWidth;
 
 	for (auto i = 0; i < LongestString.GetLength(); ++i)
 	{
-		GetFontSize(LongestString[i], &FontHeight, &FontWidth);
+		GetFontSize(LongestString[i], nullptr, &FontWidth);
 		TextBoardMaxWidth += FontWidth;
+	}
+
+	ScrollInfo.nMax = TextBoardMaxWidth - WindowWidth;
+
+	if (ScrollInfo.nMax < 0) {
+		ScrollInfo.nMax = 0;
+	}
+
+	if (ScrollInfo.nMax != 0) {
+		ScrollInfo.nPage = ScrollInfo.nMax / LongestString.GetLength();
+	}
+	else {
+		ScrollInfo.nPage = 0;
+	}
+
+	CWnd::SetScrollInfo(SB_HORZ, &ScrollInfo, true);
+
+	if (ScrollInfo.nMax == 0 && ScrollInfo.nPage == 0) {
+		TextPosX = 0;
 	}
 }
 
@@ -699,6 +743,6 @@ void CChildView::GetWindowSize(int* WindowHeight, int* WindowWidth) {
 	}
 
 	if (WindowWidth != nullptr) {
-		*WindowWidth = WindowRect.bottom - WindowRect.top;
+		*WindowWidth = WindowRect.right - WindowRect.left;
 	}
 }
