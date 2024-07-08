@@ -83,7 +83,7 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
     {
     case 0:
         m_tempVector = CImageVector(1);
-        m_tempVector.SetPenConfig(RGB(m_redIntensity, m_greenIntensity, m_blueIntensity), m_penWidth / 5 + 1);
+        m_tempVector.SetPenConfig(RGB(m_redIntensity, m_greenIntensity, m_blueIntensity), m_penWidth);
         break;
     case 1:
         m_tempVector = CImageVector(1);
@@ -118,8 +118,11 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
     m_isDrawing = false;
     ClearRectImage();
 
-    m_tempVector.AppendPoint(point);
-    m_vectorHistory.push_back(m_tempVector);
+    if (m_tempVector.GetShapeKind() != 0)
+    {
+        m_tempVector.AppendPoint(point);
+        m_vectorHistory.push_back(m_tempVector);
+    }
 
     CWnd::OnLButtonUp(nFlags, point);
 }
@@ -128,9 +131,13 @@ void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 {
     if (m_isDrawing)
     {
-        m_mousePos = point;
+        if (m_drawMode < 2)
+        {
+            m_tempMousePos = m_mousePos;
+            m_tempVector.AppendPoint(point);
+        }
 
-        m_tempVector.AppendPoint(point);
+        m_mousePos = point;
 
         Invalidate(false);
     }
@@ -235,64 +242,117 @@ void CChildView::OnColorBlueMinus()
 void CChildView::OnFileSave()
 {
     CFileDialog dlg(FALSE, _T("bmp"), NULL, OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST,
-        _T("Bitmap File (*.bmp)|*.bmp|JPEG File (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG File (*.png)|*.png||"), this);
+        _T("Bitmap File (*.bmp)|*.bmp|JPEG File (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG File (*.png)|*.png|Vector File (*.pvt)|*.pvt|"), this);
     if (dlg.DoModal() != IDOK)
     {
         return;
     }
 
     CString filePath = dlg.GetPathName();
-    CClientDC deviceContext(this);
+    CString fileExt = dlg.GetFileExt();
+    
+    if (fileExt != "pvt")
+    {
+        CClientDC deviceContext(this);
 
-    CDC memDC;
-    memDC.CreateCompatibleDC(&deviceContext);
+        CDC memDC;
+        memDC.CreateCompatibleDC(&deviceContext);
 
-    CRect windowRect;
-    CWnd::GetClientRect(&windowRect);
+        CRect windowRect;
+        CWnd::GetClientRect(&windowRect);
 
-    CBitmap windowBitmap;
-    windowBitmap.CreateCompatibleBitmap(&deviceContext, windowRect.Width(), windowRect.Height());
+        CBitmap windowBitmap;
+        windowBitmap.CreateCompatibleBitmap(&deviceContext, windowRect.Width(), windowRect.Height());
 
-    CBitmap* pOldBitmap = memDC.SelectObject(&windowBitmap);
-    memDC.BitBlt(0, 0, windowRect.Width(), windowRect.Height(), &deviceContext, 0, 0, SRCCOPY);
+        CBitmap* pOldBitmap = memDC.SelectObject(&windowBitmap);
+        memDC.BitBlt(0, 0, windowRect.Width(), windowRect.Height(), &deviceContext, 0, 0, SRCCOPY);
 
-    CImage currentImage;
-    currentImage.Attach((HBITMAP)windowBitmap.Detach());
-    currentImage.Save(filePath);
+        CImage currentImage;
+        currentImage.Attach((HBITMAP)windowBitmap.Detach());
+        currentImage.Save(filePath);
 
-    memDC.SelectObject(pOldBitmap);
-    memDC.DeleteDC();
+        memDC.SelectObject(pOldBitmap);
+        memDC.DeleteDC();
+    }
+    else
+    {
+        CStdioFile file;
+        if (file.Open(filePath, CFile::modeCreate | CFile::modeWrite | CFile::typeText))
+        {
+            for (auto& shape : m_vectorHistory)
+            {
+                CString shapeData = shape.ExportText();
+                file.WriteString(shapeData + _T("\n"));
+            }
+            file.Close();
+        }
+    }
 }
 
 void CChildView::OnFileOpen()
 {
     CFileDialog dlg(TRUE, _T("bmp"), NULL, OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
-        _T("Bitmap File (*.bmp)|*.bmp|JPEG File (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG File (*.png)|*.png||"), this);
+        _T("Bitmap File (*.bmp)|*.bmp|JPEG File (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG File (*.png)|*.png|Vector File (*.pvt)|*.pvt|"), this);
     if (dlg.DoModal() != IDOK)
     {
         return;
     }
 
     CString filePath = dlg.GetPathName();
-    CImage newImage;
-    newImage.Load(filePath);
+    CString fileExt = dlg.GetFileExt();
 
-    CRect windowRect;
-    CWnd::GetClientRect(&windowRect);
+    if (fileExt != "pvt")
+    {
+        CImage newImage;
+        newImage.Load(filePath);
 
-    CClientDC deviceContext(this);
-    CDC memDC;
-    memDC.CreateCompatibleDC(&deviceContext);
+        CRect windowRect;
+        CWnd::GetClientRect(&windowRect);
 
-    CBitmap bitmap;
-    bitmap.CreateCompatibleBitmap(&deviceContext, windowRect.Width(), windowRect.Height());
+        CClientDC deviceContext(this);
+        CDC memDC;
+        memDC.CreateCompatibleDC(&deviceContext);
 
-    CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);
-    newImage.Draw(memDC.m_hDC, 0, 0, windowRect.Width(), windowRect.Height());
-    deviceContext.StretchBlt(0, 0, windowRect.Width(), windowRect.Height(), &memDC, 0, 0, windowRect.Width(), windowRect.Height(), SRCCOPY);
+        CBitmap bitmap;
+        bitmap.CreateCompatibleBitmap(&deviceContext, windowRect.Width(), windowRect.Height());
 
-    memDC.SelectObject(pOldBitmap);
-    memDC.DeleteDC();
+        CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);
+        newImage.Draw(memDC.m_hDC, 0, 0, windowRect.Width(), windowRect.Height());
+        deviceContext.StretchBlt(0, 0, windowRect.Width(), windowRect.Height(), &memDC, 0, 0, windowRect.Width(), windowRect.Height(), SRCCOPY);
+
+        memDC.SelectObject(pOldBitmap);
+        memDC.DeleteDC();
+    }
+    else
+    {
+        CClientDC deviceContext(this);
+        CStdioFile file;
+
+        CRect clientRect;
+        GetClientRect(&clientRect);
+
+        deviceContext.FillSolidRect(clientRect, RGB(255, 255, 255));
+
+        if (file.Open(filePath, CFile::modeRead | CFile::typeText))
+        {
+            m_vectorHistory.clear();
+
+            CString strLine;
+            while (file.ReadString(strLine))
+            {
+                int shapeKind = _tstoi(strLine.Left(strLine.Find(_T(":"))));
+                CImageVector shape(shapeKind);
+                shape.ImportText(strLine);
+
+                shape.Draw(deviceContext);
+                
+                m_vectorHistory.push_back(shape);
+            }
+            file.Close();
+
+            Invalidate(false);
+        }
+    }
 }
 
 void CChildView::Draw()
@@ -309,7 +369,7 @@ void CChildView::Draw()
         HPEN newPen = CreatePen(PS_SOLID, m_penWidth / 5 + 1, RGB(m_redIntensity, m_greenIntensity, m_blueIntensity));
         HGDIOBJ oldPen = deviceContext.SelectObject(newPen);
 
-        deviceContext.MoveTo(m_mousePos);
+        deviceContext.MoveTo(m_tempMousePos);
         deviceContext.LineTo(m_mousePos);
 
         deviceContext.SelectObject(oldPen);
@@ -321,7 +381,7 @@ void CChildView::Draw()
         HPEN newPen = CreatePen(PS_SOLID, 40, RGB(255, 255, 255));
         HGDIOBJ oldPen = deviceContext.SelectObject(newPen);
 
-        deviceContext.MoveTo(m_mousePos);
+        deviceContext.MoveTo(m_tempMousePos);
         deviceContext.LineTo(m_mousePos);
 
         deviceContext.SelectObject(newPen);

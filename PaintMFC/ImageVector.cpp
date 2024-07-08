@@ -49,13 +49,17 @@ void CImageVector::AppendPoint(CPoint point)
 
 void CImageVector::Draw(CClientDC& deviceContext)
 {
-	if (m_shapeKind == 0)
+	if (m_shapeKind == 1)
 	{
 		DrawLine(deviceContext);
 	}
-	else
+	else if (m_shapeKind == 2 || m_shapeKind == 3)
 	{
 		DrawShape(deviceContext);
+	}
+	else
+	{
+		return;
 	}
 }
 
