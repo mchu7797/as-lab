@@ -1,5 +1,8 @@
 from math import sqrt
 
+def iris_compare(iris_dataset, iris_data):
+    pass
+
 raw_csv_data = []
 
 for line in open("iris.csv", encoding="utf-8"):
