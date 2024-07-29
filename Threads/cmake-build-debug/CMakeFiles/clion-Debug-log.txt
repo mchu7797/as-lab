@@ -1,0 +1,10 @@
+C:\Users\minse\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/minse/AppData/Local/Programs/CLion/bin/ninja/win/x64/ninja.exe -G Ninja -S P:\Development\AS-Lab\Threads -B P:\Development\AS-Lab\Threads\cmake-build-debug
+-- The C compiler identification is MSVC 19.40.33811.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.40.33807/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: P:/Development/AS-Lab/Threads/cmake-build-debug

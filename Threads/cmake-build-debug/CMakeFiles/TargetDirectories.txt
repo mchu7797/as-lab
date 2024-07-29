@@ -1,0 +1,5 @@
+P:/Development/AS-Lab/Threads/cmake-build-debug/CMakeFiles/get_prime_multithreading.dir
+P:/Development/AS-Lab/Threads/cmake-build-debug/CMakeFiles/get_prime_multithreading_v2.dir
+P:/Development/AS-Lab/Threads/cmake-build-debug/CMakeFiles/get_prime_openmp.dir
+P:/Development/AS-Lab/Threads/cmake-build-debug/CMakeFiles/edit_cache.dir
+P:/Development/AS-Lab/Threads/cmake-build-debug/CMakeFiles/rebuild_cache.dir

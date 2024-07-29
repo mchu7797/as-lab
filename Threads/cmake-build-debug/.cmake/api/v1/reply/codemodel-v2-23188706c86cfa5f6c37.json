@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.28"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Threads",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "get_prime_multithreading::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-get_prime_multithreading-Debug-2c465195345369621dcb.json",
+					"name" : "get_prime_multithreading",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "get_prime_multithreading_v2::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-get_prime_multithreading_v2-Debug-193ac28d217cf0af5d9c.json",
+					"name" : "get_prime_multithreading_v2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "get_prime_openmp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-get_prime_openmp-Debug-4f953c1920935574a6d9.json",
+					"name" : "get_prime_openmp",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "P:/Development/AS-Lab/Threads/cmake-build-debug",
+		"source" : "P:/Development/AS-Lab/Threads"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

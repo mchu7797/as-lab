@@ -1,0 +1,13 @@
+# ninja log v6
+2	133	7429360661914840	CMakeFiles/get_prime_multithreading.dir/get_prime_multithreading.c.obj	5a7beb708689cd83
+134	290	7429360663243419	get_prime_multithreading.exe	265eab76cb257d09
+5	115	7429367679087350	CMakeFiles/get_prime_openmp.dir/get_prime_openmp.c.obj	a8b29ba8f4c9f37e
+3	119	7429365619984039	CMakeFiles/get_prime_multithreading_v2.dir/get_prime_multithreading_v2.c.obj	1927b048b9cd9fb8
+119	247	7429365621142060	get_prime_multithreading_v2.exe	b1a283d4bf287710
+1	247	7429370626937709	build.ninja	21db39039c69e880
+6	99	7429370636366564	CMakeFiles/get_prime_openmp.dir/get_prime_openmp.c.obj	fa07aa3a6e50f3c5
+99	437	7429370637295083	get_prime_openmp.exe	3dfc5287d8fd1db0
+6	335	7429371728347164	CMakeFiles/get_prime_multithreading_v2.dir/get_prime_multithreading_v2.c.obj	6a9fdfd6fbfe8ca7
+335	648	7429371731627907	get_prime_multithreading_v2.exe	25dd5f4b793cee81
+5	347	7429372897182515	CMakeFiles/get_prime_multithreading.dir/get_prime_multithreading.c.obj	d009018c9935b527
+347	677	7429372900607879	get_prime_multithreading.exe	a750922f1ad4c399
