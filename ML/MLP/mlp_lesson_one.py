@@ -1,4 +1,5 @@
 import numpy as np
+
 from mlp import MLP
 
 # 데이터 준비 (XOR 문제)

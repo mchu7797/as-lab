@@ -1,4 +1,5 @@
 import numpy as np
+
 from mlp import MLP
 
 X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
