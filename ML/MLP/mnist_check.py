@@ -7,6 +7,7 @@ from mlp import MLP
 from mnist_image import load_mnist
 
 train_x, train_y, test_x, test_y = load_mnist("mnist")
+print("이미지 로드 완료!")
 
 mlp = MLP([784, 300, 100, 10])
 
