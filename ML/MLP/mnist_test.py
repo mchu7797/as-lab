@@ -1,8 +1,10 @@
 import sys
-import cupy as cp
+
 import numpy as np
 from PIL import Image
+
 from mlp_cuda import MLP
+
 
 def preprocess_image(image_path):
     # 이미지를 열고 그레이스케일로 변환
@@ -13,6 +15,7 @@ def preprocess_image(image_path):
     img_array = np.array(img) / 255.0
     # (1, 784) 형태로 펼치기
     return img_array.reshape(1, 784)
+
 
 def main():
     if len(sys.argv) != 2:
@@ -26,22 +29,23 @@ def main():
 
     try:
         # 저장된 가중치 로드
-        mlp.load_weights("weights.bin")
+        mlp.load_weights("weights.numpy..bin")
     except FileNotFoundError:
-        print("Error: weights.bin file not found. Please train the model first.")
+        print("Error: weights.bin.bak file not found. Please train the model first.")
         sys.exit(1)
 
     # 이미지 전처리
     input_data = preprocess_image(image_path)
 
     # GPU로 데이터 이동
-    input_data_gpu = cp.array(input_data)
+    input_data_gpu = np.array(input_data)
 
     # 예측
     output = mlp.forward(input_data_gpu)
-    predicted_digit = cp.argmax(output).get()
+    predicted_digit = np.argmax(output).get()
 
     print(f"The predicted digit is: {predicted_digit}")
+
 
 if __name__ == "__main__":
     main()

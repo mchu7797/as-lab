@@ -1,13 +1,16 @@
-import cupy as cp
-import numpy as np
 import pickle
+
+import cupy as cp
+
 
 # 활성화 함수와 그 도함수
 def sigmoid(x):
     return 1 / (1 + cp.exp(-x))
 
+
 def sigmoid_derivative(x):
     return x * (1 - x)
+
 
 # MLP 클래스
 class MLP:
