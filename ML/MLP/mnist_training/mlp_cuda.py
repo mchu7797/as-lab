@@ -1,4 +1,5 @@
 import cupy as cp
+import numpy as np
 import pickle
 
 # 활성화 함수와 그 도함수
@@ -66,3 +67,8 @@ class MLP:
             raise ValueError("불러온 가중치의 구조가 현재 모델과 일치하지 않습니다.")
         self.weights = loaded_weights
         print(f"가중치를 {filename}에서 불러왔습니다.")
+
+    def export_to_numpy_weights(self, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(cp.asnumpy(self.weights), f)
+        print(f"NumPy 호환 가중치 데이터를 {filename}에 저장했습니다.")
