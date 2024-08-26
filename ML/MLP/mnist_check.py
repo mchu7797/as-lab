@@ -1,21 +1,21 @@
-import numpy as np
+import cupy as cp
 
 from mlp_cuda import MLP
 from mnist_image import load_check_mnist
 
 
 def accuracy(predictions, labels):
-    return np.mean(np.argmax(predictions, axis=1) == labels)
+    return cp.mean(cp.argmax(predictions, axis=1) == labels)
 
 
 # 테스트 데이터 로드
-test_x, test_y = load_check_mnist("mnist", is_numpy=True)
+test_x, test_y = load_check_mnist("mnist")
 print("테스트 이미지 로드 완료!")
 print(f"로드된 테스트 이미지 수: {len(test_x)}")
 
 # MLP 모델 로드
 mlp = MLP([784, 300, 100, 10])
-mlp.load_weights("weights.numpy")
+mlp.load_weights("weights.bin")
 
 # 예측 수행
 predictions = mlp.forward(test_x)
@@ -33,6 +33,6 @@ for digit in range(10):
     print(f"숫자 {digit}의 정확도: {digit_acc * 100:.2f}%")
 
 # 오분류된 이미지 수 계산
-misclassified = np.sum(np.argmax(predictions, axis=1) != test_y)
+misclassified = cp.sum(cp.argmax(predictions, axis=1) != test_y)
 print(f"오분류된 이미지 수: {misclassified}")
 print(f"오분류율: {misclassified / len(test_y) * 100:.2f}%")

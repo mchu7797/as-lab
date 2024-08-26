@@ -4,8 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="08de0740-1307-4392-beaf-87c4c19c4c71" name="Changes" comment="MLP MNIST 데이터 정리">
+    <list default="true" id="08de0740-1307-4392-beaf-87c4c19c4c71" name="Changes" comment="MNIST 데이터를 압축 파일로 추가">
+      <change afterPath="$PROJECT_DIR$/mnist_junho.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mnist_pytorch.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mlp_cuda.py" beforeDir="false" afterPath="$PROJECT_DIR$/mlp_cuda.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mnist_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/mnist_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mnist_image.py" beforeDir="false" afterPath="$PROJECT_DIR$/mnist_image.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mnist_learn.py" beforeDir="false" afterPath="$PROJECT_DIR$/mnist_learn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mnist_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/mnist_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,18 +60,22 @@
     &quot;Python.mlp_lesson_2.executor&quot;: &quot;Run&quot;,
     &quot;Python.mlp_lesson_mnist.executor&quot;: &quot;Run&quot;,
     &quot;Python.mnist_check.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mnist_image.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mnist_junho.executor&quot;: &quot;Run&quot;,
     &quot;Python.mnist_learn.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mnist_pytorch.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mnist_pytorch_check.executor&quot;: &quot;Run&quot;,
     &quot;Python.mnist_test.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;P:/Development/AS-Lab/ML/MLP&quot;,
+    &quot;last_opened_file_path&quot;: &quot;P:/Development/Oxygen&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -75,117 +88,11 @@
       <recent name="P:\Development\AS-Lab\ML\MLP\mnist_training" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration name="mlp_lesson_mnist" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="MLP" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/mlp_lesson_mnist.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="mlp_lesson_one" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="MLP" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/mlp_lesson_one.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="mlp_lesson_three" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="MLP" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/mlp_lesson_three.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="mlp_lesson_two" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="MLP" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/mlp_lesson_two.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <list>
-      <item itemvalue="Python.mlp_lesson_mnist" />
-      <item itemvalue="Python.mlp_lesson_three" />
-      <item itemvalue="Python.mlp_lesson_one" />
-      <item itemvalue="Python.mlp_lesson_two" />
-    </list>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Python.mlp_lesson_two" />
-        <item itemvalue="Python.mlp_lesson_one" />
-      </list>
-    </recent_temporary>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.18968.29" />
-        <option value="bundled-python-sdk-f5635417b835-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.18968.29" />
+        <option value="bundled-js-predefined-d6986cc7102b-410509235cf1-JavaScript-PY-242.20224.347" />
+        <option value="bundled-python-sdk-c2d6afa66fbe-39cff9de6eef-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.20224.347" />
       </set>
     </attachedChunks>
   </component>
@@ -206,6 +113,20 @@
       <workItem from="1723031636247" duration="5013000" />
       <workItem from="1723098411057" duration="13000" />
       <workItem from="1723367877451" duration="7158000" />
+      <workItem from="1723389861550" duration="321000" />
+      <workItem from="1723391042583" duration="217000" />
+      <workItem from="1723417037796" duration="416000" />
+      <workItem from="1723471883229" duration="1100000" />
+      <workItem from="1723543434464" duration="3429000" />
+      <workItem from="1723548597673" duration="2641000" />
+      <workItem from="1723551291184" duration="8623000" />
+      <workItem from="1723991495271" duration="3096000" />
+      <workItem from="1724063893217" duration="4394000" />
+      <workItem from="1724109063265" duration="15000" />
+      <workItem from="1724149111514" duration="1697000" />
+      <workItem from="1724151536596" duration="5287000" />
+      <workItem from="1724162049193" duration="1192000" />
+      <workItem from="1724476275730" duration="1552000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore 삭제">
       <option name="closed" value="true" />
@@ -239,7 +160,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723384484437</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="MNIST 데이터를 압축 파일로 추가">
+      <option name="closed" value="true" />
+      <created>1723389895114</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1723389895114</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -250,16 +179,21 @@
     <MESSAGE value="mnist 폴더 분리" />
     <MESSAGE value="mnist 학습 데이터 저장 및 mnist 이미지 데이터를 삭제" />
     <MESSAGE value="MLP MNIST 데이터 정리" />
-    <option name="LAST_COMMIT_MESSAGE" value="MLP MNIST 데이터 정리" />
+    <MESSAGE value="MNIST 데이터를 압축 파일로 추가" />
+    <option name="LAST_COMMIT_MESSAGE" value="MNIST 데이터를 압축 파일로 추가" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MLP$mlp_lesson_2.coverage" NAME="mlp_lesson_2 Coverage Results" MODIFIED="1722495453059" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/MLP$mnist_learn.coverage" NAME="mnist_learn Coverage Results" MODIFIED="1723370464607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/MLP$mlp_lesson_mnist.coverage" NAME="mlp_lesson_mnist Coverage Results" MODIFIED="1722956981978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/MLP$mlp_cuda.coverage" NAME="mlp_cuda Coverage Results" MODIFIED="1723010058305" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mnist_pytorch.coverage" NAME="mnist_pytorch Coverage Results" MODIFIED="1724154813595" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mlp_cuda.coverage" NAME="mlp_cuda Coverage Results" MODIFIED="1723551863164" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mlp_lesson_mnist.coverage" NAME="mlp_lesson_mnist Coverage Results" MODIFIED="1723991747615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/MLP$mlp.coverage" NAME="mlp Coverage Results" MODIFIED="1722494444420" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mnist_junho.coverage" NAME="mnist_junho Coverage Results" MODIFIED="1724063967252" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mlp_lesson_2.coverage" NAME="mlp_lesson_2 Coverage Results" MODIFIED="1722495453059" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mnist_pytorch_check.coverage" NAME="mnist_pytorch_check Coverage Results" MODIFIED="1724069162138" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mnist_learn.coverage" NAME="mnist_learn Coverage Results" MODIFIED="1724149234348" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/MLP$mlp_lesson_1.coverage" NAME="mlp_lesson_1 Coverage Results" MODIFIED="1722494995682" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/MLP$mnist_check.coverage" NAME="mnist_check Coverage Results" MODIFIED="1723369508735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/MLP$mnist_test.coverage" NAME="mnist_test Coverage Results" MODIFIED="1723037196881" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/mnist_training" />
+    <SUITE FILE_PATH="coverage/MLP$mnist_check.coverage" NAME="mnist_check Coverage Results" MODIFIED="1724064977870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mnist_test.coverage" NAME="mnist_test Coverage Results" MODIFIED="1723561897394" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MLP$mnist_image.coverage" NAME="mnist_image Coverage Results" MODIFIED="1723417119580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

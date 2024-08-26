@@ -1,18 +1,17 @@
 import os
 
 import cupy as cp
-import numpy as np
 from PIL import Image
 
 
-def digit_to_array(digit):
+def digit_to_array(digit, is_numpy=False):
     array = cp.array([0.1] * 10)
     array[digit % 10] = 0.9
 
     return array
 
 
-def load_mnist(base_path, img_size=(28, 28), is_numpy=False):
+def load_mnist(base_path, img_size=(28, 28)):
     train_data = []
     train_labels = []
 
@@ -27,13 +26,10 @@ def load_mnist(base_path, img_size=(28, 28), is_numpy=False):
             train_data.append(img_array.flatten())  # 1차원 배열로 변환
             train_labels.append(digit_to_array(digit))
 
-    if is_numpy:
-        return np.array(train_data), np.array(train_labels)
-    else:
-        return cp.array(train_data), cp.array(train_labels)
+    return cp.array(train_data), cp.array(train_labels)
 
 
-def load_check_mnist(base_path, img_size=(28, 28), samples_per_digit=1000, is_numpy=False):
+def load_check_mnist(base_path, img_size=(28, 28), samples_per_digit=1000):
     test_data = []
     test_labels = []
 
@@ -48,7 +44,4 @@ def load_check_mnist(base_path, img_size=(28, 28), samples_per_digit=1000, is_nu
             test_data.append(img_array.flatten())
             test_labels.append(digit)
 
-    if is_numpy:
-        return np.array(test_data), np.array(test_labels)
-    else:
-        return cp.array(test_data), cp.array(test_labels)
+    return cp.array(test_data), cp.array(test_labels)
