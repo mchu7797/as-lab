@@ -19,33 +19,24 @@ cv::Mat ConvertToGrayscale(const cv::Mat& input)
     return output;
 }
 
-cv::Mat EqualizeHistogram(const cv::Mat& input)
+cv::Mat ApplyAverageFilter(const cv::Mat& input)
 {
     CV_Assert(input.type() == CV_8UC1);
     cv::Mat output = input.clone();
-    int histogram[256] = { 0 };
-    float cdf[256] = { 0.0f };
 
-    for (int y = 0; y < input.rows; y++)
+    for (int y = 1; y < input.rows - 1; y++)
     {
-        for (int x = 0; x < input.cols; x++)
+        for (int x = 1; x < input.cols - 1; x++)
         {
-            histogram[input.at<uchar>(y, x)]++;
-        }
-    }
-
-    int pixelCount = input.rows * input.cols;
-    cdf[0] = static_cast<float>(histogram[0]) / pixelCount;
-    for (int i = 1; i < 256; i++)
-    {
-        cdf[i] = cdf[i - 1] + static_cast<float>(histogram[i]) / pixelCount;
-    }
-
-    for (int y = 0; y < output.rows; y++)
-    {
-        for (int x = 0; x < output.cols; x++)
-        {
-            output.at<uchar>(y, x) = static_cast<uchar>(cdf[input.at<uchar>(y, x)] * 255);
+            int sum = 0;
+            for (int ky = -1; ky <= 1; ky++)
+            {
+                for (int kx = -1; kx <= 1; kx++)
+                {
+                    sum += input.at<uchar>(y + ky, x + kx);
+                }
+            }
+            output.at<uchar>(y, x) = static_cast<uchar>(sum / 9);
         }
     }
     return output;
@@ -95,9 +86,9 @@ void ProcessImage(const std::string& imagePath)
         std::string grayImagePath = baseName + "_filter0" + extension;
         cv::imwrite(grayImagePath, grayImage);
 
-        cv::Mat equalizedImage = EqualizeHistogram(grayImage);
-        std::string equalizedImagePath = baseName + "_filter1" + extension;
-        cv::imwrite(equalizedImagePath, equalizedImage);
+        cv::Mat averagedImage = ApplyAverageFilter(grayImage);
+        std::string averagedImagePath = baseName + "_filter1" + extension;
+        cv::imwrite(averagedImagePath, averagedImage);
 
         std::vector<int> sobelKernel1 = { -1, -1, -1, 0, 0, 0, 1, 1, 1 };
         cv::Mat sobelImage1 = ApplySobelFilter(grayImage, sobelKernel1);
@@ -111,7 +102,7 @@ void ProcessImage(const std::string& imagePath)
 
         cv::imshow("Original Image", originalImage);
         cv::imshow("Grayscale Image (Filter 0)", grayImage);
-        cv::imshow("Equalized Image (Filter 1)", equalizedImage);
+        cv::imshow("Averaged Image (Filter 1)", averagedImage);
         cv::imshow("Sobel Filter 1 (Filter 2)", sobelImage1);
         cv::imshow("Sobel Filter 2 (Filter 3)", sobelImage2);
 
