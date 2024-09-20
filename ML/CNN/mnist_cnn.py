@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,20 +12,20 @@ import matplotlib.pyplot as plt
 # 하이퍼파라미터 설정
 batch_size = 64
 learning_rate = 0.01
-epochs = 80
+epochs = 5
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class MNISTNet(nn.Module):
     def __init__(self):
         super(MNISTNet, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(4, 8, kernel_size=3, stride=1, padding=1)
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.flatten = nn.Flatten()
         self.sigmoid1 = nn.Sigmoid()
-        self.fc1 = nn.Linear(64 * 7 * 7, 128)
+        self.fc1 = nn.Linear(8 * 7 * 7, 128)
         self.sigmoid2 = nn.Sigmoid()
         self.fc2 = nn.Linear(128, 10)
 
@@ -149,28 +150,59 @@ def predict_image(model, image_path):
     return prediction
 
 
-def print_model_parameters(model):
-    print("\n모델 파라미터 샘플:")
+def save_conv1_filters(model, save_path='conv1_filters.png'):
+    conv1_weights = model.conv1.weight.data.cpu().numpy()
 
-    conv1_weight = model.conv1.weight.data[0, 0].cpu().numpy()
-    print("Conv1 첫 번째 필터:")
-    print(conv1_weight)
+    num_filters = conv1_weights.shape[0]
 
-    conv2_weight = model.conv2.weight.data[0, 0].cpu().numpy()
-    print("\nConv2 첫 번째 필터:")
-    print(conv2_weight)
+    grid_size = int(np.ceil(np.sqrt(num_filters)))
 
-    fc1_weight = model.fc1.weight.data[:5, :5].cpu().numpy()
-    print("\nFC1 가중치 (5x5 샘플):")
-    print(fc1_weight)
+    figure, axes = plt.subplots(grid_size, grid_size, figsize=(15, 15))
 
-    fc2_weight = model.fc2.weight.data[:5, :5].cpu().numpy()
-    print("\nFC2 가중치 (5x5 샘플):")
-    print(fc2_weight)
+    axes = axes.flatten()
 
+    for i in range(num_filters):
+        ax = axes[i]
+        ax.imshow(conv1_weights[i, 0], cmap='gray')
+        ax.axis('off')
+        ax.set_title(f'Filter {i + 1}')
+
+    for i in range(num_filters, len(axes)):
+        figure.delaxes(axes[i])
+
+    plt.tight_layout()
+    plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
+
+def save_conv2_filters(model, save_path='conv2_filters.png'):
+    # 두 번째 컨볼루션 레이어의 가중치 추출
+    conv2_weights = model.conv2.weight.data.cpu().numpy()
+
+    # 첫 번째 필터와 마지막 필터의 z=0 슬라이스 추출
+    first_filter = conv2_weights[0, 0]
+    last_filter = conv2_weights[-1, 0]
+
+    # 서브플롯 생성
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    # 첫 번째 필터 시각화
+    im1 = ax1.imshow(first_filter, cmap='viridis')
+    ax1.set_title('Conv2 First (z=0)')
+    ax1.axis('off')
+    plt.colorbar(im1, ax=ax1)
+
+    # 마지막 필터 시각화
+    im2 = ax2.imshow(last_filter, cmap='viridis')
+    ax2.set_title('Conv2 Last (z=0)')
+    ax2.axis('off')
+    plt.colorbar(im2, ax=ax2)
+
+    # 레이아웃 조정 및 이미지 저장
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
 
 def train_model(model, train_loader, test_loader):
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
     criterion = nn.MSELoss()
 
     for epoch in range(1, epochs + 1):
@@ -181,8 +213,8 @@ def train_model(model, train_loader, test_loader):
     torch.save(model.state_dict(), "mnist_cnn_model.pth")
     print("모델을 'mnist_cnn_model.pth'로 저장했습니다.")
 
-    print_model_parameters(model)
-
+    save_conv1_filters(model)
+    save_conv2_filters(model)
 
 def main():
     if len(sys.argv) == 1:  # 인자가 없는 경우 (학습 모드)
