@@ -19,13 +19,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class MNISTNet(nn.Module):
     def __init__(self):
         super(MNISTNet, self).__init__()
-        self.conv1 = nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.conv2 = nn.Conv2d(4, 8, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.flatten = nn.Flatten()
         self.sigmoid1 = nn.Sigmoid()
-        self.fc1 = nn.Linear(8 * 7 * 7, 128)
+        self.fc1 = nn.Linear(16 * 7 * 7, 128)
         self.sigmoid2 = nn.Sigmoid()
         self.fc2 = nn.Linear(128, 10)
 
@@ -157,15 +157,16 @@ def save_conv1_filters(model, save_path='conv1_filters.png'):
 
     grid_size = int(np.ceil(np.sqrt(num_filters)))
 
-    figure, axes = plt.subplots(grid_size, grid_size, figsize=(15, 15))
+    figure, axes = plt.subplots(grid_size, grid_size, figsize=(10, 10))
 
     axes = axes.flatten()
 
     for i in range(num_filters):
         ax = axes[i]
-        ax.imshow(conv1_weights[i, 0], cmap='gray')
+        im = ax.imshow(conv1_weights[i, 0], cmap='viridis')
         ax.axis('off')
         ax.set_title(f'Filter {i + 1}')
+        plt.colorbar(im, ax=ax)
 
     for i in range(num_filters, len(axes)):
         figure.delaxes(axes[i])
@@ -177,29 +178,36 @@ def save_conv2_filters(model, save_path='conv2_filters.png'):
     # 두 번째 컨볼루션 레이어의 가중치 추출
     conv2_weights = model.conv2.weight.data.cpu().numpy()
 
-    # 첫 번째 필터와 마지막 필터의 z=0 슬라이스 추출
-    first_filter = conv2_weights[0, 0]
-    last_filter = conv2_weights[-1, 0]
+    # 첫 번째 필터와 마지막 필터 추출
+    first_filter = conv2_weights[0]
+    last_filter = conv2_weights[-1]
+
+    # 입력 채널 수 확인
+    num_channels = first_filter.shape[0]
 
     # 서브플롯 생성
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    fig, axes = plt.subplots(2, num_channels, figsize=(num_channels * 3, 6))
 
     # 첫 번째 필터 시각화
-    im1 = ax1.imshow(first_filter, cmap='viridis')
-    ax1.set_title('Conv2 First (z=0)')
-    ax1.axis('off')
-    plt.colorbar(im1, ax=ax1)
+    for i in range(num_channels):
+        im = axes[0, i].imshow(first_filter[i], cmap='viridis')
+        axes[0, i].set_title(f'First Filter (z={i})')
+        axes[0, i].axis('off')
+        plt.colorbar(im, ax=axes[0, i])
 
     # 마지막 필터 시각화
-    im2 = ax2.imshow(last_filter, cmap='viridis')
-    ax2.set_title('Conv2 Last (z=0)')
-    ax2.axis('off')
-    plt.colorbar(im2, ax=ax2)
+    for i in range(num_channels):
+        im = axes[1, i].imshow(last_filter[i], cmap='viridis')
+        axes[1, i].set_title(f'Last Filter (z={i})')
+        axes[1, i].axis('off')
+        plt.colorbar(im, ax=axes[1, i])
 
     # 레이아웃 조정 및 이미지 저장
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
+
+
 
 def train_model(model, train_loader, test_loader):
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
