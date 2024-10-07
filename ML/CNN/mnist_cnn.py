@@ -16,6 +16,38 @@ epochs = 5
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
+def save_intermediate(x, save_path, phase):
+    if phase in ['conv1', 'pool1']:
+        num_filters = x.size(1)
+        fig, axes = plt.subplots(2, 4, figsize=(20, 10))
+        axes = axes.flatten()
+
+        for i in range(num_filters):
+            img = x[0, i].detach().cpu().numpy()
+            axes[i].imshow(img, cmap='gray')
+            axes[i].axis('off')
+            axes[i].set_title(f'Filter {i + 1}')
+
+        plt.tight_layout()
+        plt.savefig(f"{save_path}_{phase}.png")
+        plt.close()
+
+    elif phase in ['conv2', 'pool2']:
+        num_filters = x.size(1)
+        fig, axes = plt.subplots(4, 4, figsize=(20, 20))
+        axes = axes.flatten()
+
+        for i in range(num_filters):
+            img = x[0, i].detach().cpu().numpy()
+            axes[i].imshow(img, cmap='gray')
+            axes[i].axis('off')
+            axes[i].set_title(f'Filter {i + 1}')
+
+        plt.tight_layout()
+        plt.savefig(f"{save_path}_{phase}.png")
+        plt.close()
+
+
 class MNISTNet(nn.Module):
     def __init__(self):
         super(MNISTNet, self).__init__()
@@ -29,49 +61,35 @@ class MNISTNet(nn.Module):
         self.sigmoid2 = nn.Sigmoid()
         self.fc2 = nn.Linear(128, 10)
 
-    def forward(self, x, save_path=None):
+    def forward(self, x):
+        intermediate = {}
+
         x = self.conv1(x)
-        if save_path:
-            self.save_intermediate(x, save_path, "conv1")
+        intermediate['conv1'] = x.clone()
 
         x = self.pool1(x)
-        if save_path:
-            self.save_intermediate(x, save_path, "pool1")
+        intermediate['pool1'] = x.clone()
 
         x = self.conv2(x)
-        if save_path:
-            self.save_intermediate(x, save_path, "conv2")
+        intermediate['conv2'] = x.clone()
 
         x = self.pool2(x)
-        if save_path:
-            self.save_intermediate(x, save_path, "pool2")
+        intermediate['pool2'] = x.clone()
 
         x = self.flatten(x)
-
         x = self.sigmoid1(x)
         x = self.fc1(x)
         x = self.sigmoid2(x)
         x = self.fc2(x)
 
-        return x
-
-    def save_intermediate(self, x, save_path, phase):
-        if x.size(1) > 1:
-            img = x.mean(dim=1).squeeze()
-        else:
-            img = x.squeeze()
-
-        img = img.detach().cpu().numpy()
-        plt.imshow(img, cmap='gray')
-        plt.axis('off')
-        plt.savefig(f"{save_path}_{phase}.png", bbox_inches='tight', pad_inches=0)
-        plt.close()
+        return x, intermediate
 
 
 def check_data_availability():
     data_path = './data'
     train_data_path = os.path.join(data_path, 'MNIST', 'raw', 'train-images-idx3-ubyte')
     return os.path.exists(train_data_path)
+
 
 def load_data():
     transform = transforms.Compose([
@@ -93,7 +111,7 @@ def train(model, device, train_loader, optimizer, criterion, epoch):
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
-        output = model(data)
+        output, _ = model(data)
 
         target_one_hot = torch.zeros(target.size(0), 10).to(device)
         target_one_hot.scatter_(1, target.unsqueeze(1), 1)
@@ -115,7 +133,7 @@ def test(model, device, test_loader):
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
-            output = model(data)
+            output, _ = model(data)
 
             target_one_hot = torch.zeros(target.size(0), 10).to(device)
             target_one_hot.scatter_(1, target.unsqueeze(1), 1)
@@ -143,9 +161,22 @@ def predict_image(model, image_path):
 
     model.eval()
     with torch.no_grad():
-        save_path = os.path.splitext(image_path)[0]
-        output = model(image_tensor, save_path)
+        output, intermediate = model(image_tensor)
         prediction = output.argmax(dim=1, keepdim=True).item()
+
+    save_path = os.path.splitext(image_path)[0]
+
+    # 원본 이미지 저장
+    plt.figure(figsize=(5, 5))
+    plt.imshow(image, cmap='gray')
+    plt.axis('off')
+    plt.title('Original Image')
+    plt.savefig(f"{save_path}_original.png", bbox_inches='tight', pad_inches=0.1)
+    plt.close()
+
+    # 중간 결과 저장
+    for phase, tensor in intermediate.items():
+        save_intermediate(tensor, save_path, phase)
 
     return prediction
 
@@ -174,39 +205,25 @@ def save_conv1_filters(model, save_path='conv1_filters.png'):
     plt.tight_layout()
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
 
+
 def save_conv2_filters(model, save_path='conv2_filters.png'):
-    # 두 번째 컨볼루션 레이어의 가중치 추출
     conv2_weights = model.conv2.weight.data.cpu().numpy()
 
-    # 첫 번째 필터와 마지막 필터 추출
-    first_filter = conv2_weights[0]
-    last_filter = conv2_weights[-1]
+    num_filters = conv2_weights.shape[0]
+    num_channels = conv2_weights.shape[1]
 
-    # 입력 채널 수 확인
-    num_channels = first_filter.shape[0]
+    fig, axes = plt.subplots(num_filters, num_channels, figsize=(num_channels * 3, num_filters * 3))
 
-    # 서브플롯 생성
-    fig, axes = plt.subplots(2, num_channels, figsize=(num_channels * 3, 6))
+    for i in range(num_filters):
+        for j in range(num_channels):
+            im = axes[i, j].imshow(conv2_weights[i, j], cmap='viridis')
+            axes[i, j].axis('off')
+            axes[i, j].set_title(f'Filter {i + 1}, Channel {j + 1}')
+            plt.colorbar(im, ax=axes[i, j])
 
-    # 첫 번째 필터 시각화
-    for i in range(num_channels):
-        im = axes[0, i].imshow(first_filter[i], cmap='viridis')
-        axes[0, i].set_title(f'First Filter (z={i})')
-        axes[0, i].axis('off')
-        plt.colorbar(im, ax=axes[0, i])
-
-    # 마지막 필터 시각화
-    for i in range(num_channels):
-        im = axes[1, i].imshow(last_filter[i], cmap='viridis')
-        axes[1, i].set_title(f'Last Filter (z={i})')
-        axes[1, i].axis('off')
-        plt.colorbar(im, ax=axes[1, i])
-
-    # 레이아웃 조정 및 이미지 저장
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
-
 
 
 def train_model(model, train_loader, test_loader):
@@ -223,6 +240,7 @@ def train_model(model, train_loader, test_loader):
 
     save_conv1_filters(model)
     save_conv2_filters(model)
+
 
 def main():
     if len(sys.argv) == 1:  # 인자가 없는 경우 (학습 모드)
@@ -244,10 +262,11 @@ def main():
             sys.exit(1)
 
         model = MNISTNet().to(device)
-        model.load_state_dict(torch.load("mnist_cnn_model.pth"))
+        model.load_state_dict(torch.load("mnist_cnn_model.pth", weights_only=True))
         predicted_digit = predict_image(model, image_path)
         print(f"입력 이미지: {image_path}")
         print(f"예측된 숫자: {predicted_digit}")
+        print(f"중간 결과 이미지가 '{os.path.splitext(image_path)[0]}_*.png' 파일들로 저장되었습니다.")
 
     else:
         print("사용법:")

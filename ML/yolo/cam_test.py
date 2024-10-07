@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from ultralytics import YOLO
+from pprint import pprint
 
 # YOLO 모델 로드
 model = YOLO("yolov8n.pt")
@@ -16,6 +17,8 @@ while True:
 
     # YOLO 모델로 객체 감지
     results = model(frame)
+
+    pprint(results)
 
     # 결과 시각화
     annotated_frame = results[0].plot()

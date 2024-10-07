@@ -4,6 +4,8 @@ import sys
 import cv2
 from ultralytics import YOLO
 
+from pprint import pprint
+
 # YOLO 모델 로드
 model = YOLO('yolov8n.pt')  # 또는 다른 YOLO 모델 파일 경로
 
@@ -13,7 +15,10 @@ def detect_objects(image_path):
     img = cv2.imread(image_path)
 
     # YOLO로 객체 감지
-    results = model(img)
+    results = model.predict(img)
+
+    print("감지된 객체:")
+    pprint(results[0].boxes)
 
     # 결과 시각화
     annotated_img = results[0].plot()
