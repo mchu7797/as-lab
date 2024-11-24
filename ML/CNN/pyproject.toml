@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Chu Minseok <mchu7797@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -12,6 +13,8 @@ torchvision = {version = "^0.19.1+cu124", source = "torch"}
 torchaudio = {version = "^2.4.1+cu124", source = "torch"}
 matplotlib = "^3.9.2"
 pillow = "^10.4.0"
+scikit-learn = "^1.5.2"
+pandas = "^2.2.3"
 
 
 [[tool.poetry.source]]

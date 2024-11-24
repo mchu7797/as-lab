@@ -12,7 +12,7 @@ def detect_objects(image_path):
     img = cv2.imread(image_path)
 
     # YOLO로 객체 감지
-    results = model.predict(img)
+    results = model.predict(img, imgsz=1280)
 
     print(f"{image_path}에서 감지된 객체:")
     pprint(results[0].boxes)
@@ -23,7 +23,7 @@ def detect_objects(image_path):
     # 새 이미지 파일 이름 생성
     file_name = os.path.basename(image_path)
     name, ext = os.path.splitext(file_name)
-    new_file_name = f"{name}-found{ext}"
+    new_file_name = f"test/{name}-found{ext}"
 
     # 결과 이미지 저장
     cv2.imwrite(new_file_name, annotated_img)
