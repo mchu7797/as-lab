@@ -40,6 +40,7 @@ from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import transforms
 from PIL import Image
 import pandas as pd
+from tqdm import tqdm
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -218,43 +219,44 @@ class VehicleClassifierTrainer:
         )
 
     def train_epoch(self, train_loader):
-        """한 에폭 동안의 학습을 수행
-
-        Returns:
-            float: 평균 학습 손실
-            float: 학습 정확도 (백분율)
-        """
+        """한 에폭 동안의 학습을 수행"""
         self.model.train()
         running_loss, correct, total = 0.0, 0, 0
 
-        for inputs, labels in train_loader:
+        # tqdm으로 진행률 표시 추가
+        pbar = tqdm(train_loader, desc='Training', leave=False)
+        for inputs, labels in pbar:
             inputs, labels = inputs.to(self.device), labels.to(self.device)
-            self.optimizer.zero_grad()  # 그래디언트 초기화
+            self.optimizer.zero_grad()
 
             outputs = self.model(inputs)
             loss = self.criterion(outputs, labels)
-            loss.backward()  # 역전파
-            self.optimizer.step()  # 가중치 업데이트
+            loss.backward()
+            self.optimizer.step()
 
             running_loss += loss.item()
-            _, predicted = outputs.max(1)  # 가장 높은 확률의 클래스 선택
-            correct += predicted.eq(labels).sum().item()  # 정확히 예측한 수
+            _, predicted = outputs.max(1)
+            correct += predicted.eq(labels).sum().item()
             total += labels.size(0)
+
+            # 현재 배치의 loss와 accuracy를 표시
+            batch_acc = 100.0 * predicted.eq(labels).sum().item() / labels.size(0)
+            pbar.set_postfix({
+                'loss': f'{loss.item():.4f}',
+                'acc': f'{batch_acc:.2f}%'
+            })
 
         return running_loss / len(train_loader), 100.0 * correct / total
 
     def validate(self, val_loader):
-        """검증 데이터로 모델 성능 평가
-
-        Returns:
-            float: 평균 검증 손실
-            float: 검증 정확도 (백분율)
-        """
-        self.model.eval()  # 평가 모드로 설정
+        """검증 데이터로 모델 성능 평가"""
+        self.model.eval()
         running_loss, correct, total = 0.0, 0, 0
 
-        with torch.no_grad():  # 그래디언트 계산 비활성화
-            for inputs, labels in val_loader:
+        # 검증 과정도 진행률 표시
+        pbar = tqdm(val_loader, desc='Validating', leave=False)
+        with torch.no_grad():
+            for inputs, labels in pbar:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, labels)
@@ -263,6 +265,13 @@ class VehicleClassifierTrainer:
                 _, predicted = outputs.max(1)
                 correct += predicted.eq(labels).sum().item()
                 total += labels.size(0)
+
+                # 현재 배치의 loss와 accuracy를 표시
+                batch_acc = 100.0 * predicted.eq(labels).sum().item() / labels.size(0)
+                pbar.set_postfix({
+                    'loss': f'{loss.item():.4f}',
+                    'acc': f'{batch_acc:.2f}%'
+                })
 
         return running_loss / len(val_loader), 100.0 * correct / total
 
