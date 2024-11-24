@@ -364,7 +364,7 @@ class VehicleClassifierInference:
             nn.Module: 로드된 모델
         """
         model = VehicleClassifier(len(self.class_mapping))
-        checkpoint = torch.load(model_path, map_location=self.device)
+        checkpoint = torch.load(model_path, map_location=self.device, weights_only=True)
         model.load_state_dict(checkpoint["model_state_dict"])
         return model.to(self.device).eval()
 
