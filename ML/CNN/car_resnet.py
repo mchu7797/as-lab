@@ -38,6 +38,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import transforms
+from torchvision.models import resnet152, ResNet152_Weights
 from PIL import Image
 import pandas as pd
 from tqdm import tqdm
@@ -107,118 +108,24 @@ class VehicleDataset(Dataset):
 
 # VehicleClassifier: CNN 기반 차량 분류 모델
 class VehicleClassifier(nn.Module):
-    """
-    CNN 기반 차량 분류 모델
-
-    Attributes:
-        features (nn.Sequential): CNN 특징 추출부
-        classifier (nn.Sequential): 완전연결층 기반 분류기
-    """
-
     def __init__(self, num_classes: int):
-        """
-        Args:
-            num_classes (int): 분류할 차량 종류의 수
-        """
-        super().__init__()
+        super(VehicleClassifier, self).__init__()
+        self.resnet = resnet152(weights=ResNet152_Weights.DEFAULT)
 
-        # 특징 추출부 (입력 이미지 -> 특징 맵)
-        self.features = self._make_features()
-
-        # 분류기 (특징 벡터 -> 클래스 점수)
-        self.classifier = self._make_classifier(num_classes)
-
-        # 가중치 초기화
-        self._initialize_weights()
-
-    def _make_features(self) -> nn.Sequential:
-        """
-        CNN 특징 추출부를 생성합니다.
-
-        Returns:
-            nn.Sequential: CNN 특징 추출부
-        """
-        layers = []
-        in_channels = 1  # Grayscale 입력
-
-        # 채널 수를 점진적으로 늘리며 특징 추출
-        channels = [64, 128, 256, 512]
-        for out_channels in channels:
-            layers.extend([
-                # 컨볼루션 블록
-                nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-                nn.BatchNorm2d(out_channels),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(2),
-                # 추가 컨볼루션으로 특징 강화
-                nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-                nn.BatchNorm2d(out_channels),
-                nn.ReLU(inplace=True),
-            ])
-            in_channels = out_channels
-
-        return nn.Sequential(*layers)
-
-    def _make_classifier(self, num_classes: int) -> nn.Sequential:
-        """
-        분류기를 생성합니다.
-
-        Args:
-            num_classes (int): 분류할 클래스의 수
-
-        Returns:
-            nn.Sequential: 완전연결층 기반 분류기
-        """
-        # 이미지 크기가 input_size일 때, 4번의 MaxPool2d를 거치면 input_size/16이 됨
-        # 따라서 feature map의 크기는 (512 * (input_size/16) * (input_size/16))
-        # 224x224 이미지 기준으로 설계 (224/16 = 14)
-        feature_size = 512 * 14 * 14
-
-        return nn.Sequential(
-            nn.Flatten(),  # 특징 맵을 1차원 벡터로 변환
-            nn.Linear(feature_size, 1024),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
-            nn.Linear(1024, 512),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
+        self.resnet.conv1 = nn.Conv2d(
+            in_channels=1,
+            out_channels=self.resnet.conv1.out_channels,
+            kernel_size=self.resnet.conv1.kernel_size,
+            stride=self.resnet.conv1.stride,
+            padding=self.resnet.conv1.padding,
+            dilation=self.resnet.conv1.dilation,
+            groups=self.resnet.conv1.groups,
+            bias=False
         )
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, num_classes)
 
-    def _initialize_weights(self):
-        """
-        모델의 가중치를 초기화합니다.
-        Kaiming 초기화를 사용하여 학습 초기 안정성을 높입니다.
-        """
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, 0, 0.01)
-                nn.init.constant_(m.bias, 0)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        순전파를 수행합니다.
-
-        Args:
-            x (torch.Tensor): 입력 이미지 배치 [batch_size, 1, height, width]
-
-        Returns:
-            torch.Tensor: 클래스별 예측 점수 [batch_size, num_classes]
-        """
-        # 특징 추출
-        features = self.features(x)
-
-        # 분류 (자동으로 flatten 됨)
-        logits = self.classifier(features)
-
-        return logits
+    def forward(self, x):
+        return self.resnet(x)
 
 # VehicleClassifierTrainer: 모델 학습을 관리하는 클래스
 class VehicleClassifierTrainer:
@@ -465,8 +372,8 @@ def main():
         "csv_file": "labels.csv",
         "model_save_path": "vehicle_classifier.pth",
         "batch_size": 32,
-        "learning_rate": 0.0001,
-        "num_epochs": 40,
+        "learning_rate": 0.001,
+        "num_epochs": 30,
         "patience": 5,
     }
 
